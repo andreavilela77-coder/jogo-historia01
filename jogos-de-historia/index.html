@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jogos de História</title>
+<meta name="description" content="Jogos de revisão de História para o Ensino Médio: roleta, escape room e quizzes para o Provão Paulista.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#141A3C;--panel:#1E2652;--line:#36407A;--ink:#F4F6FF;--muted:#B3BBDE;--sun:#F6C744;--coral:#FF7B5C;--teal:#3CC4A8;--brass:#E3B04B;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(1000px 600px at 50% 0%,#232C61,var(--bg));color:var(--ink);font-family:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;font-size:18px;line-height:1.5;
+  padding:32px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.eb{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+h1{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;font-weight:800;font-size:clamp(2.4rem,7vw,4rem);line-height:1;margin:8px 0 0;letter-spacing:-.02em}
+h1 span{color:var(--sun)}
+h2{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;font-weight:800;font-size:1.4rem;margin:0}
+p{margin:0}
+.lede{color:var(--muted);max-width:60ch;margin-top:12px}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:22px;transition:border-color .15s,transform .15s}
+.card:hover,.card:focus-visible{border-color:var(--sun);transform:translateY(-2px);outline:none}
+.card .tag{align-self:flex-start;font-size:.8rem;font-weight:700;border-radius:999px;padding:3px 12px;color:#141A3C}
+.card p{color:var(--muted)}
+.card .go{margin-top:auto;font-weight:700;color:var(--sun)}
+.quiz{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.quiz .card{padding:18px}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:720px){.big,.quiz{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eb">História · Ensino Médio · Provão Paulista</p>
+    <h1>Jogos de <span>História</span></h1>
+    <p class="lede">Jogos de revisão para a 1ª, 2ª e 3ª série. A roleta e o escape room foram feitos para projetar em sala, com a turma em equipes. Os quizzes funcionam no celular, para estudar sozinho.</p>
+  </header>
+
+  <section class="big" aria-label="Jogos para projetar">
+    <a class="card" href="roleta.html">
+      <span class="tag" style="background:var(--sun)">Para projetar</span>
+      <h2>Roleta da História</h2>
+      <p>Equipes giram a roleta e respondem perguntas valendo de 100 a 400 pontos, com bônus, roubo de pontos, rebote e pódio final.</p>
+      <span class="go">Abrir a roleta →</span>
+    </a>
+    <a class="card" href="escape-room.html">
+      <span class="tag" style="background:var(--brass)">Para projetar</span>
+      <h2>Escape do Arquivo Histórico</h2>
+      <p>Uma sala por série, seis gavetas com três desafios cada e uma senha final para escapar.</p>
+      <span class="go">Entrar na sala →</span>
+    </a>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px" aria-label="Quizzes">
+    <h2>Quizzes para estudar</h2>
+    <div class="quiz">
+      <a class="card" href="quiz-1-serie.html"><span class="tag" style="background:var(--teal)">1ª série</span><h2>Desafio de História</h2><span class="go">Começar →</span></a>
+      <a class="card" href="quiz-2-serie.html"><span class="tag" style="background:var(--teal)">2ª série</span><h2>Desafio de História</h2><span class="go">Começar →</span></a>
+      <a class="card" href="quiz-3-serie.html"><span class="tag" style="background:var(--teal)">3ª série</span><h2>Desafio de História</h2><span class="go">Começar →</span></a>
+    </div>
+  </section>
+
+  <footer>Profª Andréa Vanessa Borges Vilela · URE Marília</footer>
+</div>
+</body>
+</html>

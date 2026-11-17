@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Desafio de História 1ª Série</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one narrow column like a study card; home = tema index, play = one question card, end = result + revisão */
+:root{
+  --paper:#EEF1F6; --surface:#FFFFFF; --ink:#152036; --muted:#566178; --line:#D3D9E4;
+  --accent:#2A50D4; --accent-ink:#FFFFFF; --sun:#F4B400; --sun-ink:#152036;
+  --ok:#17824A; --ok-bg:#E3F4EA; --bad:#B9332A; --bad-bg:#FBE7E5;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
+h1 mark{background:var(--sun);color:var(--sun-ink);padding:0 .15em;border-radius:6px}
+h2{font-size:1.35rem;font-weight:800}
+.lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--r);padding:16px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.mode.alt{background:var(--ink);color:var(--paper)}
+.mode b{font-family:var(--display);font-size:1.2rem}
+.mode span{font-size:.9rem;opacity:.85}
+.mode:hover{filter:brightness(1.08)}
+
+.temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.tema{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:start}
+.tema:hover{border-color:var(--accent)}
+.tema .n{font-family:var(--display);font-weight:800;font-size:1.5rem;color:var(--accent);grid-row:span 2;font-variant-numeric:tabular-nums;line-height:1}
+.tema .nm{font-weight:700;line-height:1.25;min-width:0}
+.tema .meta{font-size:.82rem;color:var(--muted)}
+.tema .meta .best{color:var(--ok);font-weight:700}
+
+/* play */
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .back{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.9rem}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.hot{background:var(--sun);color:var(--sun-ink);border-color:var(--sun);font-weight:700}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.stamp{font-family:var(--display);font-weight:800;font-size:.85rem;color:var(--bad);border:2px solid var(--bad);border-radius:6px;padding:1px 8px;transform:rotate(-3deg);letter-spacing:.04em}
+.q{font-size:1.2rem;font-weight:700;margin:0;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s, transform .1s}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt span:last-child{min-width:0}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.right .k{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.wrong .k{background:var(--bad);color:var(--surface);border-color:var(--bad)}
+.opt.gone{opacity:.3;text-decoration:line-through}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ghost{background:none;border:1px dashed var(--muted);border-radius:999px;padding:6px 14px;font-size:.9rem;color:var(--muted)}
+.ghost:disabled{opacity:.4;cursor:default}
+.fb{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--ok-bg)} .fb.no{background:var(--bad-bg)}
+.fb b{font-family:var(--display);font-size:1.1rem}
+.fb.ok b{color:var(--ok)} .fb.no b{color:var(--bad)}
+.fb p{margin:0}
+.next{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:10px 22px;font-weight:700}
+.hint{font-size:.82rem;color:var(--muted)}
+
+/* end */
+.result{text-align:left;display:flex;flex-direction:column;gap:10px}
+.big{font-family:var(--display);font-weight:800;font-size:clamp(3rem,12vw,5rem);line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.4em;color:var(--muted)}
+.rank{display:inline-block;background:var(--sun);color:var(--sun-ink);font-family:var(--display);font-weight:800;font-size:1.3rem;padding:4px 12px;border-radius:8px;align-self:flex-start}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{border-left:4px solid var(--bad);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 14px}
+.rv p{margin:0}
+.rv .a{color:var(--ok);font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn2{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:10px 18px;font-weight:700}
+footer{color:var(--muted);font-size:.85rem}
+
+@media (max-width:460px){ .modes{grid-template-columns:1fr} .card{padding:16px} .q{font-size:1.08rem} body{font-size:16px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+.fb{animation:pop .25s ease-out}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const TEMAS = [
+ "Ocupação e administração da América portuguesa",
+ "Do açúcar ao ouro",
+ "Tráfico, escravidão e resistência",
+ "Do absolutismo ao Estado liberal",
+ "Dos cercamentos à fábrica",
+ "Fontes, memória e primeiros habitantes",
+ "Grécia Antiga",
+ "Roma Antiga",
+ "Idade Média: Europa, Bizâncio, Islã e África",
+ "Renascimento, Reformas e Estados modernos",
+ "Povos originários, navegações e conquista",
+ "Da Proclamação ao Estado Novo",
+ "De 1945 ao golpe de 1964",
+ "Redemocratização e Brasil contemporâneo"
+];
+// o[0] é sempre a correta; as alternativas são embaralhadas na hora de mostrar
+const Q = [
+// Tema 1
+{t:1,y:"1534",q:"A Coroa portuguesa dividiu o território em grandes faixas e entregou cada uma a um particular, que devia povoar e defender a terra com recursos próprios. Que sistema era esse?",o:["Capitanias hereditárias", "Governo-Geral centralizado", "Vice-reinado do Prata", "Sistema de sesmarias reais"],e:"Os donatários recebiam a capitania e bancavam tudo do próprio bolso. Faltou dinheiro e sobrou ataque: só Pernambuco e São Vicente prosperaram de verdade."},
+{t:1,y:"1549",q:"Tomé de Sousa desembarca, funda Salvador e vira o primeiro governador-geral. Qual era a missão do Governo-Geral?",o:["Centralizar a administração colonial", "Extinguir as capitanias de imediato", "Libertar os indígenas escravizados nas vilas", "Preparar a autonomia da colônia"],e:"As capitanias não davam conta sozinhas. O Governo-Geral não acabou com elas: colocou um poder central por cima, com ouvidor, provedor e capitão-mor. Junto com Tomé de Sousa vieram os primeiros jesuítas."},
+{t:1,y:"1750",q:"No Tratado de Madri, Portugal e Espanha adotaram o princípio do uti possidetis. Traduzindo para o português do dia a dia:",o:["Fica com a terra quem a ocupa", "A linha de Tordesilhas é eterna", "O papa decide as fronteiras", "Terra indígena não se ocupa"],e:"Bandeirantes, missões e criadores de gado já tinham passado muito da linha de Tordesilhas. Com o uti possidetis, essa ocupação virou fronteira oficial, e o mapa do Brasil ficou parecido com o atual."},
+{t:1,q:"Nas câmaras municipais da colônia, quem podia votar e ser eleito eram os chamados “homens bons”. Quem eram eles?",o:["Proprietários ricos de “sangue limpo”", "Todos os moradores livres da vila", "Padres jesuítas indicados pelo bispo", "Comerciantes estrangeiros naturalizados"],e:"“Bom” aqui não tinha nada a ver com bondade: era quem tinha posses e prestígio. Artesãos, pobres, mulheres, indígenas e escravizados ficavam de fora."},
+// Tema 2
+{t:2,q:"No engenho de açúcar, a casa-grande e a senzala ficavam lado a lado. O que essa dupla mostra sobre aquela sociedade?",o:["Hierarquia entre senhores e escravizados", "Igualdade entre todos que trabalhavam", "Administração do engenho pela Igreja", "Controle da produção pelos comerciantes holandeses"],e:"Casa-grande era a moradia do senhor e da família; senzala, o alojamento dos escravizados. A arquitetura do engenho desenhava a desigualdade no chão."},
+{t:2,y:"séc. XVIII",q:"A Coroa cobrava 20% de todo o ouro extraído nas Minas. Como se chamava esse imposto?",o:["Quinto", "Derrama", "Dízimo", "Talha"],e:"Quinto = 1/5 = 20%. A derrama era outra coisa: a cobrança forçada dos atrasados, casa por casa, quando a meta de ouro não era atingida. Foi o estopim da Inconfidência Mineira."},
+{t:2,y:"1703",q:"Pelo Tratado de Methuen, Portugal vendia vinho à Inglaterra e comprava tecidos ingleses. Qual foi o efeito sobre o ouro brasileiro?",o:["Foi para a Inglaterra pagar o déficit", "Ficou em Lisboa financiando fábricas", "Pagou a Holanda pela saída do Nordeste", "Ficou no Brasil e financiou a independência"],e:"Tecido valia mais que vinho, então Portugal fechava a conta no vermelho e pagava em ouro. Muita gente diz que o ouro de Minas ajudou a financiar a Revolução Industrial inglesa."},
+{t:2,y:"1707–09",q:"Paulistas que descobriram ouro versus “forasteiros” portugueses e de outras capitanias que chegaram depois. Que conflito foi esse?",o:["Guerra dos Emboabas", "Guerra dos Mascates", "Revolta de Beckman", "Confederação dos Tamoios"],e:"“Emboaba” era o apelido que os paulistas davam aos forasteiros. Os paulistas perderam, e a Coroa aproveitou para controlar melhor a região das Minas."},
+// Tema 3
+{t:3,q:"No comércio triangular, no trecho África → América, o que os navios negreiros transportavam?",o:["Africanos escravizados", "Açúcar e tabaco brasileiros", "Armas e tecidos europeus", "Ouro e prata americanos"],e:"Europa mandava manufaturas e armas para a África; da África saíam cativos para a América; da América voltavam açúcar, tabaco e metais. Cerca de 12,5 milhões de pessoas foram embarcadas, e quase 4,8 milhões vieram para o Brasil."},
+{t:3,y:"20/11/1695",q:"Por que o Dia da Consciência Negra é celebrado em 20 de novembro?",o:["É a data da morte de Zumbi", "É o dia da assinatura da Lei Áurea", "É o aniversário da Revolta dos Malês", "Marca o fim do tráfico atlântico"],e:"Zumbi liderou Palmares, na Serra da Barriga (atual Alagoas), o maior quilombo da colônia. O movimento negro escolheu a data para lembrar a resistência, e não a “concessão” da Lei Áurea (13 de maio)."},
+{t:3,y:"1850",q:"Qual lei proibiu de vez o tráfico atlântico de africanos para o Brasil?",o:["Lei Eusébio de Queirós", "Lei do Ventre Livre", "Lei Saraiva-Cotegipe (Sexagenários)", "Lei Áurea de 1888"],e:"Sequência para guardar: 1831 (lei “para inglês ver”), 1850 (Eusébio de Queirós, fim do tráfico), 1871 (Ventre Livre), 1885 (Sexagenários), 1888 (Áurea)."},
+{t:3,y:"1835",q:"Em Salvador, africanos muçulmanos, muitos alfabetizados em árabe, organizaram uma grande revolta. Qual?",o:["Revolta dos Malês", "Balaiada", "Cabanagem", "Revolta da Chibata"],e:"“Malê” vinha de imale, palavra iorubá para muçulmano. A revolta foi derrotada em poucas horas, mas assustou tanto as elites que a repressão a africanos aumentou no país inteiro."},
+// Tema 4
+{t:4,q:"“O homem é o lobo do homem.” Para fugir dessa guerra de todos contra todos, as pessoas entregariam o poder a um soberano absoluto, o Leviatã. Quem pensava assim?",o:["Thomas Hobbes", "John Locke", "Montesquieu", "Jean-Jacques Rousseau"],e:"Hobbes viveu a guerra civil inglesa e concluiu que segurança vinha antes de liberdade. Daí a defesa de um poder forte e indivisível."},
+{t:4,q:"John Locke, inspirador da Revolução Gloriosa, defendia que...",o:["Direitos naturais e direito de resistência", "O poder do rei vem diretamente de Deus e é absoluto", "O Estado deve controlar toda a economia", "A propriedade privada deve ser abolida"],e:"Para Locke, o governo existe para proteger direitos. Se ele os viola, o povo pode derrubá-lo. Essa é uma das raízes do liberalismo político."},
+{t:4,q:"Montesquieu ficou famoso por propor...",o:["A separação dos três poderes", "O direito divino dos reis", "A mão invisível do mercado", "A vontade geral do contrato social"],e:"A ideia é que “o poder freie o poder”. A Constituição brasileira de 1988 segue esse modelo."},
+{t:4,y:"1776",q:"Adam Smith usou o exemplo de uma fábrica de alfinetes para mostrar que a produtividade cresce muito com...",o:["Divisão do trabalho", "Proteção alfandegária", "Volta ao artesanato", "Controle real de preços"],e:"Cada operário fazendo uma etapa produzia muito mais. Smith também falou da “mão invisível”: o mercado se ajustaria com pouca interferência do Estado, ao contrário do mercantilismo."},
+{t:4,y:"1689",q:"Depois da Revolução Gloriosa, a Inglaterra aprovou o Bill of Rights. O que ele fez?",o:["Limitou o rei e fortaleceu o Parlamento", "Restaurou o absolutismo dos Stuart", "Proclamou a república de Cromwell", "Criou o voto universal para homens e mulheres"],e:"O rei passou a depender do Parlamento para cobrar impostos e manter exército. Nascia a monarquia parlamentar."},
+// Tema 5
+{t:5,y:"1516",q:"Em Utopia, Thomas More escreveu que na Inglaterra “as ovelhas devoram os homens”. Ele estava criticando...",o:["Camponeses expulsos para criar ovelhas", "Ataques de lobos às aldeias e aos rebanhos", "A fome causada pela Peste Negra", "O fim da criação de animais no campo"],e:"A lã dava lucro, então os senhores cercaram terras comunais. Os camponeses expulsos foram para as cidades e viraram mão de obra barata das futuras fábricas."},
+{t:5,q:"O historiador E. P. Thompson estudou a “disciplina do tempo” na Revolução Industrial. O que mudou na vida do trabalhador?",o:["O relógio passou a ditar o ritmo do trabalho", "Ele passou a trabalhar só quando quisesse", "As jornadas ficaram mais curtas logo de cara", "O trabalho passou a seguir as estações do ano"],e:"No campo, o tempo era o da tarefa e da natureza. Na fábrica, sirene, relógio e multa. Jornadas de 14 a 16 horas, inclusive para crianças."},
+{t:5,y:"1811–16",q:"Na Inglaterra, grupos de trabalhadores invadiam fábricas e quebravam máquinas. Quem eram e por que faziam isso?",o:["Luditas, contra desemprego e salários baixos", "Cartistas, exigindo o voto para as mulheres inglesas", "Jacobinos, defendendo a república na França", "Anarquistas, combatendo o poder da Igreja"],e:"As máquinas tiravam o emprego de artesãos qualificados. Quebrar o tear era uma forma de pressão quando não existiam sindicatos legais."},
+{t:5,q:"Qual dessas mudanças fez parte da Revolução Agrícola inglesa e ajudou a liberar gente para as cidades?",o:["Rotação de culturas e novas técnicas", "A volta do sistema feudal de servidão", "A proibição da criação de ovelhas", "Distribuição de terras a todos os camponeses"],e:"Com mais comida e menos gente necessária no campo, sobrou mão de obra para as fábricas. Cercamentos e técnicas novas andaram juntos."},
+// Tema 6
+{t:6,q:"Uma playlist de funk, uma certidão de nascimento e um caco de cerâmica podem ser fontes históricas?",o:["Sim, todo vestígio humano pode ser fonte", "Não, só documentos oficiais escritos contam", "Só a certidão, porque é documento oficial", "Só a cerâmica, porque é bem mais antiga"],e:"Fontes podem ser escritas, orais, visuais, sonoras ou materiais. O historiador faz perguntas a elas: quem produziu, quando, para quê."},
+{t:6,q:"Arqueólogos usam o carbono-14 para...",o:["Datar restos orgânicos", "Revelar cores de pinturas", "Decifrar escritas antigas", "Descobrir a profissão do morto"],e:"Todo ser vivo acumula carbono-14, que vai sumindo num ritmo conhecido depois da morte. Medindo o que sobrou, dá para estimar a idade de até uns 50 mil anos."},
+{t:6,q:"Luzia, um dos esqueletos humanos mais antigos das Américas (cerca de 11 mil anos), foi encontrada em...",o:["Lagoa Santa, Minas Gerais", "Serra da Capivara, Piauí", "Ilha de Marajó, Pará", "Vale do Ribeira, São Paulo"],e:"O crânio estava no Museu Nacional e foi resgatado dos escombros do incêndio de 2018. Na Serra da Capivara, a arqueóloga Niède Guidon estudou pinturas rupestres e defendeu uma ocupação ainda mais antiga."},
+{t:6,q:"Os sambaquis, encontrados no litoral brasileiro, são...",o:["Montes de conchas feitos por povos do litoral", "Vasos de cerâmica pintada feitos pelos povos da Amazônia", "Desenhos gigantes feitos no chão da floresta", "Aldeias jesuítas do litoral no século XVI"],e:"Alguns têm mais de 30 metros de altura e milhares de anos. Serviam também como cemitério e marco no território."},
+{t:6,q:"Qual a diferença entre história e memória?",o:["Memória é lembrança seletiva; história usa método", "São a mesma coisa, só que com nomes diferentes nos livros", "História é sempre oral; memória é sempre escrita", "Memória é científica; história é só opinião"],e:"As duas se alimentam. Um monumento, uma festa ou um feriado são memória; o trabalho crítico com fontes é história."},
+// Tema 7
+{t:7,q:"Uma pólis treinava os meninos para a guerra desde os 7 anos; a outra criou a democracia. Quem é quem?",o:["Esparta militarista; Atenas democrática", "Atenas militarista; Esparta democrática", "As duas eram democracias de cidadãos", "As duas eram impérios governados por reis"],e:"Esparta tinha dois reis e uma sociedade voltada à guerra. Atenas, com Clístenes (508 a.C.), criou a democracia com a Eclésia, a assembleia dos cidadãos."},
+{t:7,q:"Na democracia ateniense, quem podia votar na Eclésia?",o:["Homens adultos, livres, filhos de atenienses", "Todos os moradores de Atenas, sem exceção", "Homens e mulheres livres, desde que maiores de idade", "Quem pagasse impostos, até estrangeiros"],e:"Mulheres, estrangeiros (metecos) e escravizados ficavam de fora. Era uma democracia direta, mas para uma minoria."},
+{t:7,q:"O que era o ostracismo em Atenas?",o:["Exílio de 10 anos votado pelos cidadãos", "Pena de morte aplicada aos traidores da pólis", "Uma competição de poesia e teatro", "Assembleia restrita aos mais ricos"],e:"Os votos eram escritos em cacos de cerâmica, os ostraka. Daí o nome e a expressão “ficar no ostracismo”."},
+{t:7,y:"séc. IV a.C.",q:"As conquistas de Alexandre, o Grande, misturaram a cultura grega com a do Oriente. Esse período se chama...",o:["Helenismo", "Iluminismo", "Feudalismo", "Renascimento"],e:"Alexandria, no Egito, virou o centro do saber, com sua biblioteca. Lá, Eratóstenes calculou a circunferência da Terra com sombras e geometria."},
+// Tema 8
+{t:8,q:"Na República romana, os plebeus conquistaram os tribunos da plebe. Qual era o superpoder deles?",o:["Vetar decisões contra os plebeus", "Comandar o exército nas guerras", "Nomear o imperador de Roma", "Escolher os sacerdotes do templo"],e:"Os tribunos eram “invioláveis” e podiam dizer veto. Outra vitória plebeia foi a Lei das Doze Tábuas: leis escritas, que não dependiam da memória dos patrícios."},
+{t:8,q:"“Pão e circo”: o que essa política fazia em Roma?",o:["Dar trigo e espetáculos aos pobres", "Educar jovens em escolas públicas", "Taxar ricos para pagar o exército", "Proibir jogos para evitar desordem"],e:"Lutas de gladiadores no Coliseu, corridas no Circo Máximo e trigo barato ajudavam a evitar revoltas urbanas."},
+{t:8,y:"313 → 380",q:"O cristianismo foi perseguido em Roma e depois virou religião oficial. Qual a ordem certa?",o:["Constantino libera (313); Teodósio oficializa (380)", "Teodósio libera (313); Constantino oficializa (380)", "Nero libera (64); Diocleciano oficializa (303)", "Júlio César oficializa (44 a.C.); Nero proíbe (64)"],e:"Édito de Milão em 313 e Édito de Tessalônica em 380. Em menos de 70 anos, de perseguidos a religião do império."},
+{t:8,y:"476",q:"Em 476, o último imperador romano do Ocidente foi deposto. E a parte oriental do império?",o:["Durou como Império Bizantino até 1453", "Foi destruída no mesmo ano de 476", "Foi conquistada pelos cartagineses", "Tornou-se uma república democrática governada pelo Senado"],e:"Com capital em Constantinopla, Bizâncio durou quase mil anos a mais, até a conquista otomana."},
+{t:8,y:"73–71 a.C.",q:"Um gladiador escravizado liderou dezenas de milhares de pessoas numa revolta contra Roma. Quem?",o:["Espártaco", "Júlio César", "Tibério Graco", "Aníbal Barca"],e:"Espártaco virou símbolo de rebeldia contra a escravidão. Aníbal era cartaginês (Guerras Púnicas), e os Gracos eram tribunos que propuseram reforma agrária."},
+// Tema 9
+{t:9,y:"c. 1030",q:"O bispo Adalberão de Laon dividiu a sociedade medieval em três ordens. Quais?",o:["Os que rezam, guerreiam e trabalham", "Senhores, mercadores e artesãos livres", "Ricos, remediados e pobres da aldeia", "Reis, burgueses e operários urbanos"],e:"Clero (oratores), nobreza (bellatores) e camponeses (laboratores). A ideia justificava que cada um ficasse no seu lugar."},
+{t:9,q:"O servo era obrigado a trabalhar de graça alguns dias por semana nas terras do senhor. Como se chamava essa obrigação?",o:["Corveia", "Talha", "Banalidade", "Dízimo"],e:"Talha era entregar parte da colheita; banalidade era pagar para usar o moinho, o forno ou a prensa do senhor; dízimo ia para a Igreja."},
+{t:9,y:"1324",q:"Mansa Musa, imperador do Mali, fez uma peregrinação a Meca e distribuiu tanto ouro no Cairo que...",o:["O preço do ouro despencou por anos", "Foi preso por contrabando de metais", "Comprou a cidade de Constantinopla", "Proibiu o comércio de sal no Saara"],e:"O Mali controlava rotas de ouro e sal pelo Saara, e Tombuctu era um grande centro de estudos islâmicos. Muita gente considera Mansa Musa uma das pessoas mais ricas da história."},
+{t:9,y:"1347–51",q:"No século XIV, a Peste Negra atingiu a Europa. Estima-se que ela matou...",o:["Cerca de um terço dos europeus", "Menos de 1% da população", "Apenas os animais domésticos", "Só pessoas no Oriente asiático"],e:"Com tanta gente morta, faltou mão de obra, e camponeses passaram a exigir melhores condições. Foi uma das peças da crise do feudalismo."},
+{t:9,q:"Na África ocidental, os griôs tinham um papel importante. Qual?",o:["Transmitir a história pela tradição oral", "Cobrar os impostos em nome do rei", "Comandar caravanas pelo deserto", "Construir as igrejas talhadas na pedra de Lalibela"],e:"Os griôs contavam genealogias e feitos dos reis com música e poesia. A Epopeia de Sundiata, fundador do Mali, chegou até nós assim."},
+// Tema 10
+{t:10,y:"c. 1450",q:"A prensa de tipos móveis de Gutenberg mudou o mundo porque...",o:["Barateou os livros e espalhou ideias", "Permitiu imprimir dinheiro de papel", "Substituiu os copistas por escravizados", "Só imprimia livros proibidos pela Igreja"],e:"Sem a imprensa, as ideias de Lutero não teriam se espalhado tão depressa. Ela também ajudou o humanismo e a ciência."},
+{t:10,y:"1517",q:"Martinho Lutero publicou as 95 teses criticando principalmente...",o:["A venda de indulgências", "A tradução da Bíblia", "A arte renascentista", "O comércio com o Oriente"],e:"Indulgências prometiam reduzir a pena dos pecados mediante pagamento. Lutero defendia a salvação pela fé e a leitura da Bíblia por todos."},
+{t:10,y:"1633",q:"Galileu Galilei foi julgado pela Inquisição e obrigado a negar o que defendia. O que era?",o:["Que a Terra gira em torno do Sol", "Que a Terra é plana e imóvel", "Que a Lua tem luz própria", "Que não existem estrelas além das que vemos"],e:"Galileu apoiou o heliocentrismo de Copérnico, com observações de telescópio. Diz a lenda que, depois de negar, murmurou: “E, no entanto, ela se move”."},
+{t:10,q:"O Concílio de Trento (1545–1563) foi a resposta católica à Reforma. O que ele fez?",o:["Reafirmou dogmas e reforçou a Inquisição", "Aceitou as ideias de Martinho Lutero sobre a fé", "Acabou com o celibato dos padres", "Separou a Igreja católica do papa"],e:"Isso é a Contrarreforma. Os jesuítas, fundados em 1540, foram peça-chave, inclusive na catequese aqui na América portuguesa."},
+{t:10,q:"Por que muitos historiadores criticam chamar a Idade Média de “Idade das Trevas”?",o:["Houve universidades, catedrais e ciência", "Não houve guerras durante todo o período", "A Igreja não tinha poder algum na época", "O termo foi inventado só no século XX"],e:"O rótulo foi criado por renascentistas e iluministas que queriam parecer as “luzes”. Universidades como Bolonha e Paris são medievais."},
+// Tema 11
+{t:11,q:"Tenochtitlán, uma cidade construída sobre um lago, com canais e mercados enormes, era a capital de qual povo?",o:["Astecas", "Incas", "Maias", "Tupinambás"],e:"Os incas tinham capital em Cusco e usavam os quipus, cordas com nós, para registros. Os maias formavam cidades-Estado e criaram escrita e calendários precisos."},
+{t:11,y:"1519–21",q:"Como Hernán Cortés, com poucas centenas de espanhóis, derrotou o Império Asteca?",o:["Alianças indígenas e epidemias", "Só a superioridade das armas", "Rendição asteca sem combate", "Ajuda militar do exército inca"],e:"Milhares de tlaxcaltecas lutaram ao lado de Cortés, e a varíola matou multidões. O mesmo padrão se repetiu com Pizarro no Peru."},
+{t:11,q:"A mita, usada pelos espanhóis nas minas de prata de Potosí, era...",o:["Trabalho indígena obrigatório por turnos", "Imposto pago em ouro pelos colonos", "Festa religiosa em honra ao Sol", "Tipo de embarcação usada pelos espanhóis no Pacífico"],e:"Potosí produziu prata em quantidade absurda à custa de muitas vidas indígenas. Já a encomienda dava a um colono o direito de explorar o trabalho de um grupo indígena."},
+{t:11,y:"1500",q:"Por que hoje muitos preferem falar em “chegada” ou até “invasão”, e não “descobrimento” do Brasil?",o:["A terra já era habitada por milhões", "Os portugueses nunca chegaram aqui", "Os holandeses tinham chegado antes dos portugueses", "Cabral chegou por engano à África"],e:"Na carta de Pero Vaz de Caminha, os indígenas já aparecem fazendo escambo. “Descobrir” supõe que não havia ninguém, e havia povos com línguas, territórios e histórias próprias."},
+// Tema 12
+{t:12,q:"Na Primeira República, a “política do café com leite” era...",o:["Alternância de SP e MG na presidência", "Um programa federal de merenda escolar", "Um acordo comercial com a Argentina", "Política de imigração de italianos"],e:"São Paulo (café) e Minas Gerais (leite) dominavam a política, apoiados nos coronéis e no voto de cabresto."},
+{t:12,q:"O voto de cabresto funcionava porque...",o:["O voto era aberto e vigiado", "O voto era secreto e eletrônico", "Só as mulheres podiam votar", "Ninguém era obrigado a votar"],e:"Sem voto secreto, o coronel sabia em quem cada um votava. Somado à fraude, isso garantia os resultados. O voto secreto só veio com o Código Eleitoral de 1932."},
+{t:12,y:"1896–97",q:"No sertão da Bahia, a comunidade liderada por Antônio Conselheiro foi destruída pelo Exército republicano. Que conflito foi esse?",o:["Guerra de Canudos", "Revolta da Vacina", "Guerra do Contestado", "Revolta da Armada"],e:"Euclides da Cunha cobriu a guerra e escreveu Os Sertões. A República tratou sertanejos pobres como inimigos monarquistas."},
+{t:12,y:"1943",q:"Getúlio Vargas reuniu as leis trabalhistas na CLT. Ao mesmo tempo, o Estado Novo (1937–45) tinha o DIP. Pra que servia o DIP?",o:["Censurar a imprensa e fazer propaganda", "Fiscalizar fábricas e proteger operários", "Organizar eleições livres e diretas", "Administrar a recém-criada Petrobras"],e:"Vargas foi o “pai dos pobres” e também um ditador: direitos trabalhistas de um lado, censura, prisões e propaganda de outro. As duas coisas fazem parte da Era Vargas."},
+{t:12,y:"1904",q:"No Rio de Janeiro, a população se revoltou contra a vacinação obrigatória comandada por Oswaldo Cruz. Por quê?",o:["Imposição à força e demolição de cortiços", "As pessoas queriam a vacina, mas não havia doses", "Militares exigiam aumento de salário", "Imigrantes queriam voltar para a Europa"],e:"Não era só medo da vacina: a reforma urbana tinha expulsado os pobres do centro, e agentes entravam nas casas sem pedir. A revolta juntou tudo isso."},
+// Tema 13
+{t:13,y:"1953",q:"Com o slogan “O petróleo é nosso”, o governo Vargas criou...",o:["A Petrobras", "A Companhia Siderúrgica Nacional", "O Banco do Brasil", "A Vale do Rio Doce"],e:"A Petrobras nasceu com monopólio estatal do petróleo, depois de uma grande campanha popular nacionalista."},
+{t:13,y:"1954",q:"“Saio da vida para entrar na História.” Essa frase é de...",o:["Carta-testamento de Vargas", "Discurso de posse de JK", "Juramento de Tiradentes", "Discurso de Jango na Central do Brasil"],e:"Pressionado por uma grave crise política, Vargas se suicidou em agosto de 1954. A comoção popular adiou por anos os planos de golpe."},
+{t:13,y:"1956–61",q:"“50 anos em 5”: qual era a marca do governo Juscelino Kubitschek?",o:["Indústria automobilística e Brasília", "Reforma agrária radical no campo", "Fechamento do Congresso Nacional", "Estatização das empresas estrangeiras"],e:"Brasília foi inaugurada em 1960. O preço veio depois: inflação alta e dívida externa."},
+{t:13,y:"1964",q:"As Reformas de Base de João Goulart (agrária, urbana, educacional...) foram usadas como pretexto para...",o:["O golpe civil-militar de 1964", "A renúncia de Jânio Quadros", "A adoção do parlamentarismo em 1961", "A volta de Vargas ao poder"],e:"Militares, empresários, parte da imprensa e da classe média apoiaram o golpe, por isso “civil-militar”. Começaram 21 anos de ditadura."},
+{t:13,y:"1968",q:"O AI-5, o mais duro dos atos institucionais, permitiu...",o:["Fechar o Congresso e censurar", "Convocar eleições diretas", "Libertar presos políticos", "Promulgar a Constituição de 1988"],e:"Com o AI-5 começam os “anos de chumbo”, com tortura e desaparecimentos. Ele só foi revogado em 1978."},
+// Tema 14
+{t:14,y:"1988",q:"A Constituição de 1988 ganhou o apelido de...",o:["Constituição Cidadã", "Constituição Polaca", "Carta Outorgada", "Constituição do Café"],e:"Assim a chamou Ulysses Guimarães. Ela ampliou direitos sociais, criou o SUS, garantiu voto ao analfabeto e definiu o racismo como crime inafiançável. A “Polaca” foi a de 1937, do Estado Novo."},
+{t:14,y:"1994",q:"Em 1993 a inflação chegou a 2.477% ao ano. Em 1998 estava em 1,7%. O que derrubou esse número?",o:["O Plano Real", "O AI-5", "A Lei de Cotas", "A criação da Petrobras"],e:"Com a URV e depois o real, a hiperinflação acabou. Antes disso, o preço no supermercado mudava de manhã para a tarde."},
+{t:14,y:"2006",q:"A Lei Maria da Penha trata de quê?",o:["Violência doméstica contra a mulher", "Cotas para mulheres nas eleições", "Licença-maternidade remunerada", "Igualdade salarial entre os gêneros"],e:"Maria da Penha Fernandes sobreviveu a duas tentativas de feminicídio e lutou quase 20 anos por justiça. Em 2015, a Lei do Feminicídio tornou crime hediondo o assassinato de mulheres por razões de gênero."},
+{t:14,q:"O “mito da democracia racial” é a ideia de que no Brasil não existe racismo porque houve muita mistura. Por que é chamado de mito?",o:["Os dados mostram desigualdade racial", "Nunca houve escravidão no Brasil", "A Constituição proíbe falar de raça no Brasil", "Todos os brasileiros ganham igual"],e:"Em 2018, segundo o IBGE, o rendimento médio de pessoas brancas era de R$ 2.796; o de pretos e pardos, R$ 1.608. Essa desigualdade é herança da escravidão e de uma abolição sem integração."},
+{t:14,y:"2012",q:"A Lei de Cotas reserva vagas em universidades e institutos federais para...",o:["Alunos de escola pública, com recorte racial", "Atletas de alto rendimento em todo o país", "Filhos de servidores públicos federais", "Estudantes estrangeiros vindos de intercâmbio"],e:"É uma política de ação afirmativa: tratar de forma diferente quem partiu de condições desiguais, para chegar mais perto da igualdade."}
+];
+
+const HIT = ["Mandou bem!","Isso aí!","Acertou em cheio!","Historiador(a) à vista!","Na mosca!","Gabaritando, hein?","O professor ficaria orgulhoso!"];
+const MISS = ["Quase! Bora entender:","Não foi dessa vez.","Opa, pegadinha da história!","Errar faz parte. Olha só:","Anota essa no caderno:"];
+const RANKS = [[0,"Turista no tempo","Dá uma relida no resumo do tema e volta para a revanche."],[0.4,"Aprendiz de cronista","Você já tem a base. Mais uma rodada e isso sobe."],[0.6,"Guardião(ã) do arquivo","Bom domínio! Revise as que errou logo abaixo."],[0.8,"Historiador(a) de respeito","Muito bem! Falta pouco para o topo."],[0.95,"Lenda do Provão","Gabaritou (ou quase). Pode desafiar a turma!"]];
+
+const LS = "quiz-hist-1s-v1";
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)) || {}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(LS, JSON.stringify(d)); }catch(e){} }
+let best = load();
+
+const app = document.getElementById("app");
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+
+let S = null;
+
+function home(){
+  S = null;
+  const counts = TEMAS.map((_,i)=>Q.filter(q=>q.t===i+1).length);
+  app.innerHTML = `
+  <header>
+    <div class="eyebrow">História · 1ª série do EM · Provão Paulista</div>
+    <h1 style="margin-top:8px">Desafio de <mark>História</mark></h1>
+    <p class="lede">${Q.length} perguntas sobre os 14 temas do ano. Escolha um tema para revisar ou encare uma rodada misturada. Cada resposta vem com a explicação, então errar também ensina.</p>
+  </header>
+  <section class="modes" aria-label="Modos de jogo">
+    <button class="mode" id="m-relampago"><b>Rodada relâmpago</b><span>10 perguntas sorteadas de todos os temas</span></button>
+    <button class="mode alt" id="m-maratona"><b>Maratona</b><span>Todas as ${Q.length} perguntas. Para quem quer gabaritar</span></button>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Escolha um tema</h2>
+    <div class="temas">
+      ${TEMAS.map((nm,i)=>{ const b=best["t"+(i+1)]; return `
+      <button class="tema" data-t="${i+1}">
+        <span class="n">${pad(i+1)}</span>
+        <span class="nm">${esc(nm)}</span>
+        <span class="meta">${counts[i]} perguntas${b!=null?` · <span class="best">recorde ${b}/${counts[i]}</span>`:""}</span>
+      </button>`; }).join("")}
+    </div>
+  </section>
+  <footer>Dica: no computador, use as teclas 1 a 4 para responder e Enter para avançar. Seus recordes ficam salvos só neste aparelho.</footer>`;
+  document.getElementById("m-relampago").onclick = ()=> start(shuffle(Q).slice(0,10), "Rodada relâmpago", "rel");
+  document.getElementById("m-maratona").onclick = ()=> start(shuffle(Q), "Maratona", "mar");
+  app.querySelectorAll(".tema").forEach(b=> b.onclick = ()=>{ const t=+b.dataset.t; start(shuffle(Q.filter(q=>q.t===t)), `Tema ${pad(t)} · ${TEMAS[t-1]}`, "t"+t); });
+  window.scrollTo({top:0});
+}
+
+function start(list, label, key){
+  S = {list, label, key, i:0, score:0, streak:0, maxStreak:0, fifty:true, missed:[], answered:false, opts:null};
+  question();
+}
+
+function question(){
+  const item = S.list[S.i];
+  S.answered = false;
+  S.opts = shuffle(item.o.map((txt,idx)=>({txt, ok: idx===0})));
+  const pct = (S.i / S.list.length) * 100;
+  app.innerHTML = `
+  <div class="bar">
+    <button class="back" id="back">← Temas</button>
+    <div class="chips">
+      <span class="chip">${S.i+1} de ${S.list.length}</span>
+      <span class="chip">Acertos: ${S.score}</span>
+      <span class="chip ${S.streak>=3?"hot":""}" id="streak">Sequência: ${S.streak}</span>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+  <article class="card">
+    <div class="qhead">
+      <span class="eyebrow">Tema ${pad(item.t)} · ${esc(TEMAS[item.t-1])}</span>
+      ${item.y?`<span class="stamp">${esc(item.y)}</span>`:""}
+    </div>
+    <p class="q">${esc(item.q)}</p>
+    <div class="opts" role="group" aria-label="Alternativas">
+      ${S.opts.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${"ABCD"[k]}</span><span>${esc(o.txt)}</span></button>`).join("")}
+    </div>
+    <div class="tools">
+      <button class="ghost" id="fifty" ${S.fifty?"":"disabled"}>Eliminar 2 alternativas (1 por rodada)</button>
+    </div>
+    <div id="fb"></div>
+  </article>`;
+  document.getElementById("back").onclick = home;
+  app.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> answer(+b.dataset.k));
+  document.getElementById("fifty").onclick = fifty;
+  window.scrollTo({top:0});
+}
+
+function fifty(){
+  if(!S.fifty || S.answered) return;
+  S.fifty = false;
+  const wrong = shuffle(S.opts.map((o,k)=>o.ok?-1:k).filter(k=>k>=0)).slice(0,2);
+  wrong.forEach(k=>{ const b=app.querySelector(`.opt[data-k="${k}"]`); b.classList.add("gone"); b.disabled=true; });
+  document.getElementById("fifty").disabled = true;
+}
+
+function answer(k){
+  if(S.answered) return;
+  const btn = app.querySelector(`.opt[data-k="${k}"]`);
+  if(!btn || btn.disabled) return;
+  S.answered = true;
+  const item = S.list[S.i];
+  const ok = S.opts[k].ok;
+  app.querySelectorAll(".opt").forEach((b,j)=>{ b.disabled = true; if(S.opts[j].ok) b.classList.add("right"); });
+  if(!ok) btn.classList.add("wrong");
+  document.getElementById("fifty").disabled = true;
+  if(ok){ S.score++; S.streak++; S.maxStreak=Math.max(S.maxStreak,S.streak); }
+  else { S.streak=0; S.missed.push(item); }
+  let head = ok ? pick(HIT) : pick(MISS);
+  if(ok && S.streak>=3 && S.streak%3===0) head = `${S.streak} seguidas! Tá pegando fogo.`;
+  const last = S.i === S.list.length-1;
+  document.getElementById("fb").innerHTML = `
+    <div class="fb ${ok?"ok":"no"}" role="status">
+      <b>${esc(head)}</b>
+      ${ok?"":`<p><strong>Resposta:</strong> ${esc(item.o[0])}</p>`}
+      <p>${esc(item.e)}</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="next" id="next">${last?"Ver resultado":"Próxima →"}</button></div>`;
+  const st = document.getElementById("streak");
+  st.textContent = `Sequência: ${S.streak}`; st.classList.toggle("hot", S.streak>=3);
+  app.querySelector(".chips .chip:nth-child(2)").textContent = `Acertos: ${S.score}`;
+  const nx = document.getElementById("next");
+  nx.onclick = next; nx.focus({preventScroll:true});
+  document.getElementById("fb").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function next(){
+  if(S.i < S.list.length-1){ S.i++; question(); } else end();
+}
+
+function end(){
+  const n = S.list.length, r = S.score/n;
+  let rank = RANKS[0]; RANKS.forEach(x=>{ if(r>=x[0]) rank=x; });
+  let record = false;
+  if(S.key.startsWith("t")){ const prev = best[S.key]; if(prev==null || S.score>prev){ best[S.key]=S.score; record = prev!=null || true; save(best); } }
+  else { const prev = best[S.key]; if(prev==null || r>prev){ best[S.key]=r; save(best); record = prev!=null; } }
+  app.innerHTML = `
+  <div class="bar"><button class="back" id="back">← Temas</button></div>
+  <article class="card result">
+    <span class="eyebrow">${esc(S.label)}</span>
+    <div class="big">${S.score}<small> / ${n}</small></div>
+    <span class="rank">${esc(rank[1])}</span>
+    <p style="margin:0">${esc(rank[2])}</p>
+    <p class="hint" style="margin:0">Maior sequência de acertos: ${S.maxStreak}${record && S.key.startsWith("t") ? " · recorde do tema salvo" : ""}</p>
+    <div class="row">
+      <button class="next" id="again">Jogar de novo</button>
+      ${S.missed.length?`<button class="btn2" id="redo">Refazer só as que errei (${S.missed.length})</button>`:""}
+    </div>
+  </article>
+  ${S.missed.length?`
+  <section class="review">
+    <h2>Revisão: o que vale reler</h2>
+    ${S.missed.map(m=>`<div class="rv"><p class="eyebrow">Tema ${pad(m.t)}</p><p>${esc(m.q)}</p><p class="a">${esc(m.o[0])}</p></div>`).join("")}
+  </section>`:`<p class="lede">Nenhum erro nesta rodada. Que tal tentar a Maratona?</p>`}`;
+  document.getElementById("back").onclick = home;
+  const list = S.list, label = S.label, key = S.key, missed = S.missed;
+  document.getElementById("again").onclick = ()=> start(shuffle(list), label, key);
+  const rd = document.getElementById("redo");
+  if(rd) rd.onclick = ()=> start(shuffle(missed), "Revanche das que errei", "rev");
+  window.scrollTo({top:0});
+}
+
+document.addEventListener("keydown", e=>{
+  if(!S || e.target.tagName==="INPUT") return;
+  const n = "1234".indexOf(e.key);
+  if(n>=0 && !S.answered){ answer(n); }
+  else if(e.key==="Enter" && S.answered && document.getElementById("next") && document.activeElement?.id!=="next"){ next(); }
+});
+
+home();
+</script>
+
+</html>

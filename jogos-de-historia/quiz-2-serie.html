@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Desafio de História 2ª Série</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one narrow column like a study card; home = tema index, play = one question card, end = result + revisão */
+:root{
+  --paper:#EEF1F6; --surface:#FFFFFF; --ink:#152036; --muted:#566178; --line:#D3D9E4;
+  --accent:#2A50D4; --accent-ink:#FFFFFF; --sun:#F4B400; --sun-ink:#152036;
+  --ok:#17824A; --ok-bg:#E3F4EA; --bad:#B9332A; --bad-bg:#FBE7E5;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
+h1 mark{background:var(--sun);color:var(--sun-ink);padding:0 .15em;border-radius:6px}
+h2{font-size:1.35rem;font-weight:800}
+.lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--r);padding:16px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.mode.alt{background:var(--ink);color:var(--paper)}
+.mode b{font-family:var(--display);font-size:1.2rem}
+.mode span{font-size:.9rem;opacity:.85}
+.mode:hover{filter:brightness(1.08)}
+
+.temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.tema{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:start}
+.tema:hover{border-color:var(--accent)}
+.tema .n{font-family:var(--display);font-weight:800;font-size:1.5rem;color:var(--accent);grid-row:span 2;font-variant-numeric:tabular-nums;line-height:1}
+.tema .nm{font-weight:700;line-height:1.25;min-width:0}
+.tema .meta{font-size:.82rem;color:var(--muted)}
+.tema .meta .best{color:var(--ok);font-weight:700}
+
+/* play */
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .back{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.9rem}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.hot{background:var(--sun);color:var(--sun-ink);border-color:var(--sun);font-weight:700}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.stamp{font-family:var(--display);font-weight:800;font-size:.85rem;color:var(--bad);border:2px solid var(--bad);border-radius:6px;padding:1px 8px;transform:rotate(-3deg);letter-spacing:.04em}
+.q{font-size:1.2rem;font-weight:700;margin:0;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s, transform .1s}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt span:last-child{min-width:0}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.right .k{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.wrong .k{background:var(--bad);color:var(--surface);border-color:var(--bad)}
+.opt.gone{opacity:.3;text-decoration:line-through}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ghost{background:none;border:1px dashed var(--muted);border-radius:999px;padding:6px 14px;font-size:.9rem;color:var(--muted)}
+.ghost:disabled{opacity:.4;cursor:default}
+.fb{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--ok-bg)} .fb.no{background:var(--bad-bg)}
+.fb b{font-family:var(--display);font-size:1.1rem}
+.fb.ok b{color:var(--ok)} .fb.no b{color:var(--bad)}
+.fb p{margin:0}
+.next{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:10px 22px;font-weight:700}
+.hint{font-size:.82rem;color:var(--muted)}
+
+/* end */
+.result{text-align:left;display:flex;flex-direction:column;gap:10px}
+.big{font-family:var(--display);font-weight:800;font-size:clamp(3rem,12vw,5rem);line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.4em;color:var(--muted)}
+.rank{display:inline-block;background:var(--sun);color:var(--sun-ink);font-family:var(--display);font-weight:800;font-size:1.3rem;padding:4px 12px;border-radius:8px;align-self:flex-start}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{border-left:4px solid var(--bad);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 14px}
+.rv p{margin:0}
+.rv .a{color:var(--ok);font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn2{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:10px 18px;font-weight:700}
+footer{color:var(--muted);font-size:.85rem}
+
+@media (max-width:460px){ .modes{grid-template-columns:1fr} .card{padding:16px} .q{font-size:1.08rem} body{font-size:16px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+.fb{animation:pop .25s ease-out}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const TEMAS = [
+ "Do artesanato à fábrica: 1ª e 2ª Revolução Industrial",
+ "A classe operária e a luta por direitos",
+ "Nações e nacionalismos: Primavera dos Povos e unificações",
+ "Ideias sociais e projetos revolucionários",
+ "Destino Manifesto e capitalismo monopolista",
+ "Revolução Francesa e era napoleônica",
+ "Crise do sistema colonial",
+ "Emancipação política e formação do Estado",
+ "Segundo Reinado: identidade nacional, café e indústria",
+ "Da mão de obra escravizada à imigração",
+ "Proclamação e Primeira República",
+ "Movimentos sociais e Era Vargas até o Estado Novo"
+];
+// o[0] é sempre a correta; as alternativas são embaralhadas na hora de mostrar
+const Q = [
+// Tema 1
+{t:1,y:"séc. XVIII",q:"Por que a Revolução Industrial começou na Inglaterra, e não em outro país?",o:["Capital, carvão, mão de obra e Parlamento burguês", "Era o único país europeu cortado por rios", "Não tinha colônias nem comércio exterior", "O rei inglês proibiu a agricultura para forçar a indústria"],e:"Foi a soma de fatores: dinheiro para investir, matéria-prima no subsolo, gente disponível para trabalhar e um governo, desde 1688, alinhado com os negócios."},
+{t:1,q:"Qual dupla resume a energia e o setor-símbolo da 1ª Revolução Industrial?",o:["Vapor e indústria têxtil", "Eletricidade e automóveis", "Petróleo e química fina", "Energia nuclear e informática"],e:"O vapor, aperfeiçoado por James Watt, movia teares e locomotivas, alimentado por carvão. Eletricidade, petróleo, aço e química são marcas da 2ª Revolução, a partir de 1870."},
+{t:1,y:"1913",q:"Henry Ford implantou na fábrica do Modelo T uma novidade que barateou o carro. Qual?",o:["A linha de montagem", "A produção artesanal", "O trabalho domiciliar", "A proibição de máquinas"],e:"No fordismo, cada operário repete uma tarefa enquanto a esteira traz a peça. Taylor já propunha cronometrar e dividir cada movimento. Resultado: muito mais produção e trabalho mais repetitivo."},
+{t:1,q:"Do artesanato à maquinofatura, o que o trabalhador perdeu?",o:["O controle do processo de trabalho", "O direito de receber salário", "A necessidade de trabalhar todo dia", "O contato com outros trabalhadores"],e:"O artesão era dono das ferramentas e fazia o produto inteiro. Na fábrica, as máquinas são do patrão e o operário vira uma peça do processo, vendendo só sua força de trabalho."},
+{t:1,q:"Nas primeiras fábricas inglesas, por que havia tantas crianças trabalhando?",o:["Ganhavam menos e eram mais controláveis", "A lei obrigava todas as crianças a trabalhar", "As escolas pagavam para as fábricas", "Só crianças sabiam operar o vapor"],e:"Crianças entravam nas minas e nas máquinas por serem pequenas, baratas e obedientes. Leis como a de 1833 começaram, devagar, a limitar a jornada infantil."},
+// Tema 2
+{t:2,y:"1886",q:"Por que o 1º de maio é o Dia do Trabalhador no mundo todo?",o:["Lembra a luta pelas 8 horas em Chicago", "É o dia da assinatura da CLT no Brasil", "Marca o fim da Revolução Francesa", "Celebra o aniversário de Karl Marx"],e:"Em maio de 1886, uma bomba explodiu num ato na praça Haymarket, a polícia atirou e operários anarquistas foram condenados sem provas. Virou símbolo da luta por direitos."},
+{t:2,q:"“Oito horas de trabalho, oito de descanso, oito de lazer.” O que esse lema reivindicava?",o:["Jornada de 8 horas diárias", "Fim do pagamento de salários", "Volta ao trabalho no campo", "Mais horas extras remuneradas"],e:"Jornadas de 14 a 16 horas eram comuns. A luta pelas 8 horas atravessou o século XIX e só virou lei em muitos países no século XX."},
+{t:2,y:"1838",q:"Os cartistas ingleses ficaram conhecidos por uma petição, a Carta do Povo. O que ela pedia?",o:["Voto universal masculino e secreto", "A volta do absolutismo na Inglaterra", "O fim das eleições parlamentares", "A destruição das máquinas das fábricas"],e:"Os cartistas apostaram na política: com voto, os operários poderiam mudar as leis. As petições foram rejeitadas, mas quase todas as demandas viraram lei depois."},
+{t:2,q:"As trade unions inglesas eram...",o:["Sindicatos de trabalhadores", "Companhias de comércio colonial", "Partidos dos donos de fábricas", "Bancos públicos de crédito"],e:"Proibidas no início pelas Combination Acts, as associações operárias foram legalizadas aos poucos e viraram ferramenta de greve e negociação."},
+{t:2,q:"Qual foi a diferença entre luditas e cartistas na luta operária?",o:["Luditas quebravam máquinas; cartistas queriam voto", "Luditas queriam voto; cartistas quebravam máquinas", "Os dois grupos defendiam o fim dos sindicatos", "Os dois eram associações de donos de fábrica"],e:"São estratégias diferentes de um mesmo período: a ação direta contra a máquina e a pressão política organizada."},
+// Tema 3
+{t:3,y:"1848",q:"A “Primavera dos Povos” foi...",o:["Revoluções liberais e nacionalistas na Europa", "Um festival de flores e artes em Paris", "A onda de independências das colônias europeias na África", "O fim da Segunda Guerra Mundial na Europa"],e:"França, Áustria, estados alemães e italianos, Hungria... Quase todas as revoltas foram derrotadas, mas as ideias de nação e de direitos ficaram."},
+{t:3,q:"Na unificação italiana, quem liderou os “camisas vermelhas” na conquista do sul?",o:["Giuseppe Garibaldi", "Otto von Bismarck, o chanceler", "Napoleão III", "Conde de Cavour"],e:"Cavour, ministro do Piemonte-Sardenha, articulou a diplomacia; Garibaldi conquistou o Reino das Duas Sicílias e o entregou a Vítor Emanuel II. Roma só entrou em 1870."},
+{t:3,y:"1871",q:"Bismarck dizia que a Alemanha seria unificada não por discursos, mas por...",o:["“Ferro e sangue”", "“Pão e circo”", "“Ordem e progresso”", "“Liberdade e igualdade”"],e:"A Prússia venceu três guerras (Dinamarca, Áustria e França). O Império Alemão foi proclamado em Versalhes, e a França perdeu a Alsácia-Lorena, uma ferida que pesaria em 1914."},
+{t:3,q:"O que é uma nação, na visão de muitos historiadores?",o:["Comunidade de língua, história e símbolos", "Grupo que existe igual desde a Pré-História", "Qualquer território governado por um rei", "Uma população com a mesma religião oficial"],e:"Benedict Anderson chamou a nação de “comunidade imaginada”: escola, jornais, hinos e mapas ajudam a criar o sentimento de pertencer."},
+{t:3,q:"O Zollverein, criado em 1834, ajudou a unificar a Alemanha porque era...",o:["Uma união aduaneira", "Um exército austríaco", "Uma igreja nacional", "Uma ferrovia até Roma"],e:"Antes de virar um país, a Alemanha virou um mercado comum, liderado pela Prússia. A economia abriu caminho para a política."},
+// Tema 4
+{t:4,y:"1848",q:"“Proletários de todos os países, uni-vos!” Essa frase encerra...",o:["O Manifesto Comunista", "A Declaração de 1789", "A Riqueza das Nações, de Smith", "O Contrato Social"],e:"Para Marx e Engels, a história é a história da luta de classes. A burguesia explorava o proletariado, que deveria se organizar e tomar o poder."},
+{t:4,q:"Robert Owen, Saint-Simon e Fourier foram chamados de socialistas utópicos porque...",o:["Propunham sociedades ideais e cooperativas", "Defendiam o absolutismo e a nobreza", "Queriam destruir as fábricas pela força das armas", "Eram contra qualquer mudança social"],e:"Owen chegou a criar comunidades-modelo, como New Harmony, nos EUA. Marx chamou essa proposta de “utópica” para diferenciá-la do seu socialismo “científico”."},
+{t:4,q:"Qual era a principal diferença entre anarquistas e marxistas?",o:["Anarquistas queriam extinguir o Estado já", "Anarquistas defendiam o rei e o papa", "Anarquistas apoiavam a propriedade privada", "Não havia diferença entre os dois grupos"],e:"Proudhon e Bakunin viam no Estado uma forma de opressão em si. Essa divergência rachou a Associação Internacional dos Trabalhadores."},
+{t:4,y:"1871",q:"A Comuna de Paris foi...",o:["Governo operário de 72 dias, esmagado", "A fundação da República Francesa em 1789", "Uma festa popular de verão em Paris", "Um banco estatal criado por Napoleão"],e:"A Comuna separou Igreja e Estado, criou ensino laico e abriu mão de salários altos para cargos públicos. Na “Semana Sangrenta”, milhares de pessoas foram mortas."},
+{t:4,q:"Para Marx, a mais-valia é...",o:["Valor produzido além do salário", "Um imposto cobrado pelo Estado", "Lucro sobre produtos importados", "O salário mínimo dos operários"],e:"Se o operário produz em 4 horas o valor do seu salário, as outras horas da jornada geram riqueza para o capitalista. Daí a luta pela redução da jornada."},
+// Tema 5
+{t:5,y:"séc. XIX",q:"O “Destino Manifesto” era a crença de que...",o:["Os EUA tinham missão divina de expandir-se", "Os indígenas eram os donos legítimos do Oeste", "Os EUA deviam voltar a ser colônia inglesa", "O México deveria governar toda a América"],e:"A ideia justificou guerras, compra de territórios e a expulsão de povos indígenas. Na guerra de 1846–48, o México perdeu cerca de metade do seu território."},
+{t:5,y:"1838",q:"A “Trilha das Lágrimas” foi...",o:["Expulsão forçada dos cherokees", "Uma rota de ouro na Califórnia", "A primeira ferrovia dos EUA", "Uma marcha pacífica de colonos"],e:"A Lei de Remoção dos Índios (1830) obrigou povos inteiros a deixar suas terras. Depois vieram as reservas e o extermínio dos bisões."},
+{t:5,y:"1862",q:"O Homestead Act incentivou a ocupação do Oeste porque...",o:["Dava terras a quem as cultivasse", "Proibia a moradia no Oeste", "Devolvia terras aos indígenas", "Vendia terras somente para grandes empresas"],e:"Cerca de 65 hectares por família. Compare com o Brasil: aqui, a Lei de Terras de 1850 fez o contrário, e a terra só podia ser comprada."},
+{t:5,q:"John D. Rockefeller e sua Standard Oil chegaram a controlar cerca de 90% do refino de petróleo nos EUA. Isso é exemplo de...",o:["Truste, ou monopólio", "Socialismo de mercado", "Livre concorrência", "Agricultura familiar"],e:"Trustes juntavam empresas para dominar o mercado e ditar preços. Em 1890, a Lei Sherman tentou combatê-los, e a Standard Oil acabou dividida em 1911."},
+{t:5,q:"O mito do self-made man dizia que qualquer um enriquece com esforço próprio. O que ele escondia?",o:["Desigualdades de origem e exclusões", "Que os EUA eram uma monarquia", "Que ninguém trabalhava nas fábricas", "Que todos já nasciam com fortuna"],e:"Histórias como a de Andrew Carnegie existiram, mas eram exceção. O mito ajudava a culpar os pobres pela própria pobreza."},
+// Tema 6
+{t:6,y:"1789",q:"No Antigo Regime francês, o Terceiro Estado era...",o:["A maioria, que pagava os impostos", "O clero, isento de impostos e dono de terras", "A nobreza, dona das terras", "A família real e a corte"],e:"Clero e nobreza tinham privilégios e quase não pagavam impostos. O Terceiro Estado, cerca de 97% da população, sustentava o sistema."},
+{t:6,y:"14/07/1789",q:"Qual acontecimento virou o símbolo do início da Revolução Francesa?",o:["A tomada da Bastilha", "A coroação de Napoleão", "O Congresso de Viena", "A execução de Robespierre"],e:"A Bastilha era uma prisão-fortaleza, símbolo do poder absoluto do rei. Hoje, 14 de julho é a data nacional da França."},
+{t:6,y:"1791",q:"Olympe de Gouges escreveu a Declaração dos Direitos da Mulher e da Cidadã. O que ela denunciava?",o:["A exclusão das mulheres dos direitos", "A igualdade já conquistada pelas mulheres", "A necessidade de o rei voltar ao poder", "A justiça da escravidão nas colônias"],e:"“Homem e cidadão” era literal. Olympe foi guilhotinada em 1793, durante o Terror."},
+{t:6,q:"Na Convenção, os jacobinos se diferenciavam dos girondinos por...",o:["Eram mais radicais e ligados aos sans-culottes", "Defendiam a volta do absolutismo e dos privilégios de Luís XVI", "Representavam apenas a nobreza do interior", "Eram contra a república e a favor do rei"],e:"Os girondinos representavam a alta burguesia. Os jacobinos comandaram o Terror e a Lei do Máximo, que tabelava preços."},
+{t:6,y:"1806",q:"O Bloqueio Continental de Napoleão tem tudo a ver com o Brasil. Por quê?",o:["Portugal o ignorou e a corte fugiu para o Rio", "Napoleão invadiu o Rio de Janeiro em 1806", "O Brasil declarou guerra direta à França", "A França proibiu a entrada do café brasileiro na Europa"],e:"Aliado dos ingleses, Portugal ficou entre a cruz e a espada. A corte fugiu escoltada pela marinha britânica."},
+{t:6,y:"1815",q:"Depois da derrota de Napoleão, o Congresso de Viena tentou...",o:["Restaurar as monarquias anteriores", "Espalhar a república pela Europa", "Criar uma união econômica europeia", "Libertar todas as colônias americanas"],e:"Princípio da legitimidade e Santa Aliança para conter revoluções. Mas as ideias de 1789 já tinham se espalhado e voltariam em 1830 e 1848."},
+// Tema 7
+{t:7,y:"1789",q:"A Inconfidência Mineira foi um movimento...",o:["Da elite mineira contra a derrama", "De escravizados pela abolição imediata", "De indígenas contra os jesuítas", "De operários pelas 8 horas de trabalho"],e:"Poetas, padres, militares e proprietários planejavam uma república. Denunciados, foram presos, e só Tiradentes, o de menor posição social, foi enforcado, em 1792."},
+{t:7,y:"1798",q:"O que tornou a Conjuração Baiana, ou dos Alfaiates, diferente da Mineira?",o:["Participação popular e fim da escravidão", "Formada só por fazendeiros ricos", "Queria manter o Brasil ligado a Portugal", "Aconteceu no Rio Grande do Sul"],e:"Alfaiates, soldados e escravizados espalharam panfletos em Salvador inspirados na Revolução Francesa e no Haiti. Quatro homens negros e pardos foram enforcados."},
+{t:7,y:"1808",q:"Logo ao chegar ao Brasil, D. João assinou a abertura dos portos às nações amigas. Na prática, isso significou...",o:["Fim do monopólio comercial português", "Proibição de todo comércio externo", "Independência imediata do Brasil", "Volta do pacto colonial e do monopólio de Lisboa"],e:"Em 1810, os tratados com a Inglaterra deram a produtos ingleses tarifa de 15%, menor até que a de Portugal (16%)."},
+{t:7,q:"A historiadora Maria Odila Leite da Silva Dias falou em “interiorização da metrópole”. O que é isso?",o:["A corte no Rio enraizou as elites locais", "A capital portuguesa mudou para o sertão", "Os portugueses abandonaram o litoral", "O Brasil passou a governar a África"],e:"Com a corte aqui, o Rio virou centro do império: Banco do Brasil, imprensa, Jardim Botânico e, em 1815, Reino Unido a Portugal e Algarves."},
+// Tema 8
+{t:8,y:"1820",q:"A Revolução do Porto, em Portugal, acelerou a independência do Brasil porque...",o:["As Cortes queriam recolonizar o Brasil", "Proclamou a independência do Brasil", "Acabou com a monarquia em Portugal e criou uma república", "Uniu Brasil e Espanha num só reino"],e:"A elite brasileira não queria perder o que tinha ganhado desde 1808. Em 9 de janeiro de 1822, D. Pedro decidiu ficar: o Dia do Fico."},
+{t:8,y:"2/7/1823",q:"A independência foi só um grito às margens do Ipiranga?",o:["Não: houve guerras, como na Bahia", "Sim, foi tudo pacífico e imediato", "Sim, Portugal reconheceu no mesmo dia", "Não, o Brasil foi colônia até 1889"],e:"Bahia, Pará, Maranhão e Cisplatina tiveram combates, com participação de soldados negros, indígenas e de mulheres como Maria Quitéria."},
+{t:8,y:"1824",q:"A Constituição de 1824 criou um quarto poder, exclusivo do imperador. Qual?",o:["Poder Moderador", "Poder Popular", "Poder Judiciário", "Poder Eclesiástico"],e:"Com ele, D. Pedro podia dissolver a Câmara e nomear senadores. A Constituição foi outorgada (imposta) e o voto era censitário, por renda."},
+{t:8,y:"1824",q:"Frei Caneca foi executado por participar de qual movimento contra a centralização de D. Pedro I?",o:["Confederação do Equador", "Revolução Farroupilha gaúcha", "Cabanagem", "Revolta da Vacina"],e:"Pernambuco e províncias vizinhas reagiram à Constituição outorgada e propuseram uma república federativa. A repressão foi dura."},
+{t:8,y:"1831–40",q:"O período regencial ficou marcado por...",o:["Muitas revoltas nas províncias", "Paz total e nenhum conflito", "O reinado de D. Pedro II adulto", "A abolição da escravidão"],e:"Com D. Pedro II criança, regentes governavam e o país quase se fragmentou. O Golpe da Maioridade, em 1840, coroou o imperador aos 14 anos."},
+// Tema 9
+{t:9,q:"No Romantismo de José de Alencar, em obras como O Guarani e Iracema, o indígena aparece como...",o:["Herói idealizado e símbolo nacional", "Inimigo selvagem a ser destruído pela nação", "Personagem secundário e sem nome", "Operário explorado nas fábricas"],e:"Era preciso inventar uma identidade nacional diferente da portuguesa. O indígena, já distante no passado, virava herói; a escravidão ficava escondida."},
+{t:9,y:"1888",q:"O quadro “Independência ou Morte”, de Pedro Américo, pintado 66 anos depois do fato, é uma fonte sobre...",o:["Como o Império queria lembrar o fato", "O que ocorreu em cada detalhe no Ipiranga", "A vida cotidiana dos escravizados em 1822", "A influência da Revolução Francesa no Brasil"],e:"Pintura histórica é construção de memória. D. Pedro aparece heroico em cavalo imponente; na viagem, ele provavelmente montava uma mula."},
+{t:9,q:"O que foi a “modernização conservadora” do Segundo Reinado?",o:["Trens e telégrafo, sem mudar o latifúndio", "Abolição imediata e reforma agrária ampla", "Proibição de qualquer novidade tecnológica", "Transformação imediata do país em república"],e:"O café pagou trens e telégrafos, e o Barão de Mauá abriu indústrias e bancos. A estrutura social seguiu a mesma."},
+{t:9,q:"No Segundo Reinado, o café se espalhou primeiro pelo Vale do Paraíba e depois pelo...",o:["Oeste Paulista", "Sertão nordestino", "Pantanal mato-grossense", "Litoral catarinense"],e:"O Vale usou mão de obra escravizada e esgotou o solo. O Oeste Paulista, com terra roxa e ferrovias, recebeu muitos imigrantes."},
+{t:9,y:"1844",q:"A Tarifa Alves Branco aumentou os impostos sobre importados. Um efeito disso foi...",o:["Estimular indústrias nacionais", "Acabar com a produção de café", "Baratear os produtos ingleses", "Abolir a escravidão no Império"],e:"O objetivo principal era aumentar a arrecadação, mas o produto importado ficou mais caro, o que abriu espaço para a indústria local."},
+// Tema 10
+{t:10,y:"1850",q:"Duas semanas depois da Lei Eusébio de Queirós, veio a Lei de Terras. O que ela determinou?",o:["Terras só por compra", "Lotes para cada liberto", "Terras para os indígenas", "Terras grátis a imigrantes"],e:"Com o fim do tráfico à vista, a elite garantiu que libertos e imigrantes pobres não virassem donos de terra fácil, e continuassem trabalhando para os fazendeiros."},
+{t:10,q:"No sistema de colonato nas fazendas de café, o imigrante...",o:["Cuidava de pés de café e plantava sua roça", "Recebia uma parte da fazenda de presente ao chegar", "Trabalhava acorrentado como escravizado", "Era funcionário público do Império"],e:"Antes houve a parceria, como na fazenda Ibicaba, do Senador Vergueiro, em que os colonos começavam endividados. A revolta dos parceiros em 1856 ajudou a mudar o sistema."},
+{t:10,q:"O governo incentivou e até pagou a vinda de imigrantes europeus. Além da falta de braços, que ideia estava por trás disso?",o:["O “branqueamento” da população", "Dar empregos aos libertos", "Aumentar a população indígena no interior do país", "Reduzir a produção de café"],e:"Elites acreditavam que imigrantes brancos “melhorariam” o país. Ao mesmo tempo, libertos eram deixados de lado no mercado de trabalho."},
+{t:10,y:"1888",q:"Por que se diz que a abolição foi “inacabada”?",o:["Libertou sem terra, educação ou integração", "A Lei Áurea só valia para as províncias do Nordeste", "A escravidão continuou legal até 1950", "Os senhores revogaram a lei depois"],e:"A lei tinha dois artigos. As consequências aparecem até hoje em indicadores de renda, moradia e violência."},
+{t:10,y:"1884",q:"Qual província aboliu a escravidão antes da Lei Áurea, com ajuda dos jangadeiros que se recusaram a transportar escravizados?",o:["Ceará", "São Paulo", "Rio de Janeiro", "Minas Gerais"],e:"O jangadeiro Francisco José do Nascimento, o Dragão do Mar, virou símbolo. Amazonas também aboliu em 1884."},
+// Tema 11
+{t:11,y:"1889",q:"Aristides Lobo escreveu que o povo assistiu à Proclamação da República “bestializado”. O que ele quis dizer?",o:["O povo não participou nem entendeu", "O povo fez uma grande revolução", "Todos queriam a volta do imperador", "Houve uma guerra civil no Rio"],e:"A República nasceu de um golpe militar com apoio de cafeicultores. Para a maioria, foi uma troca de cima, sem participação."},
+{t:11,y:"1891",q:"A primeira Constituição republicana acabou com o voto censitário, mas excluiu...",o:["Analfabetos e mulheres", "Apenas os estrangeiros", "Ninguém, era universal", "Apenas os fazendeiros"],e:"Com a maioria analfabeta, pouquíssima gente votava. E o voto aberto abria caminho para o cabresto."},
+{t:11,q:"A Política dos Governadores, criada por Campos Sales, funcionava como uma troca de favores. Como?",o:["Apoio mútuo entre presidente e oligarquias", "Governadores escolhidos pelo imperador", "Congresso nomeando todos os prefeitos", "Os estados passaram a ser governados direto pelo Exército"],e:"Na base da pirâmide, os coronéis entregavam os votos. Uma Comissão Verificadora ainda “degolava” opositores eleitos."},
+{t:11,y:"1912–16",q:"No Paraná e em Santa Catarina, camponeses expulsos para a construção de uma ferrovia seguiram líderes religiosos e enfrentaram o Exército. Que conflito foi esse?",o:["Guerra do Contestado", "Guerra de Canudos (Bahia)", "Revolta da Chibata", "Balaiada"],e:"A empresa ferroviária recebeu terras dos dois lados da linha, e quem morava ali foi expulso. Como em Canudos, a resposta do governo foi militar."},
+{t:11,y:"1910",q:"Marinheiros, em sua maioria negros, liderados por João Cândido, tomaram navios no Rio para exigir...",o:["O fim dos castigos com chibata", "O direito de voto das mulheres", "A volta da monarquia ao Brasil", "O aumento do preço do café"],e:"Vinte e dois anos depois da abolição, oficiais ainda chicoteavam marinheiros. A revolta venceu, mas seus líderes foram perseguidos. João Cândido ficou conhecido como o Almirante Negro."},
+// Tema 12
+{t:12,y:"1917",q:"A greve geral de 1917 em São Paulo começou em fábricas têxteis. Quem eram muitos dos grevistas iniciais?",o:["Operárias, muitas delas imigrantes", "Fazendeiros de café do interior", "Militares de baixa patente do Exército", "Banqueiros e comerciantes paulistas"],e:"A morte do sapateiro anarquista José Martinez pela polícia fez a greve se espalhar. Dezenas de milhares pararam a cidade."},
+{t:12,y:"1922",q:"Os Dezoito do Forte e a Coluna Prestes fizeram parte de qual movimento?",o:["Tenentismo", "Integralismo", "Abolicionismo", "Cartismo"],e:"Jovens oficiais criticavam as oligarquias e defendiam voto secreto e moralização política. A Coluna Prestes percorreu cerca de 25 mil km pelo interior."},
+{t:12,y:"1930",q:"O que rompeu a política do café com leite e abriu caminho para a Revolução de 1930?",o:["A indicação do paulista Júlio Prestes", "A queda na produção de leite mineiro", "O fim da exportação de café em 1920", "A vitória de Getúlio na eleição de 1930"],e:"Minas se juntou ao Rio Grande do Sul e à Paraíba na Aliança Liberal. Com a crise de 1929 e o assassinato de João Pessoa, Getúlio chegou ao poder pelas armas."},
+{t:12,y:"1932",q:"Qual foi a principal bandeira da Revolução Constitucionalista de 1932, em São Paulo?",o:["Uma nova Constituição", "A volta da monarquia", "O fim do voto feminino", "A divisão do país em dois"],e:"São Paulo perdeu militarmente, mas a Constituição veio em 1934, com voto secreto e voto feminino garantidos."},
+{t:12,y:"1937",q:"Qual documento falso foi usado para justificar o golpe do Estado Novo?",o:["O Plano Cohen", "A Carta-testamento", "O Manifesto Comunista", "A Lei de Segurança"],e:"O plano foi forjado por militares integralistas. Veio a Constituição “Polaca”, o fechamento do Congresso e o DIP com censura e propaganda."},
+{t:12,y:"1943",q:"A CLT, Consolidação das Leis do Trabalho, garantiu direitos como...",o:["Carteira assinada, férias e salário mínimo", "Fim de todos os sindicatos do país", "Direito de voto para os analfabetos e para os soldados", "Reforma agrária nas grandes fazendas"],e:"Muitos direitos vieram de décadas de luta operária. Mas os sindicatos ficaram atrelados ao Estado, e os trabalhadores rurais ficaram de fora."}
+];
+
+const HIT = ["Mandou bem!","Isso aí!","Acertou em cheio!","Historiador(a) à vista!","Na mosca!","Gabaritando, hein?","O professor ficaria orgulhoso!"];
+const MISS = ["Quase! Bora entender:","Não foi dessa vez.","Opa, pegadinha da história!","Errar faz parte. Olha só:","Anota essa no caderno:"];
+const RANKS = [[0,"Turista no tempo","Dá uma relida no resumo do tema e volta para a revanche."],[0.4,"Aprendiz de cronista","Você já tem a base. Mais uma rodada e isso sobe."],[0.6,"Guardião(ã) do arquivo","Bom domínio! Revise as que errou logo abaixo."],[0.8,"Historiador(a) de respeito","Muito bem! Falta pouco para o topo."],[0.95,"Lenda do Provão","Gabaritou (ou quase). Pode desafiar a turma!"]];
+
+const LS = "quiz-hist-2s-v1";
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)) || {}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(LS, JSON.stringify(d)); }catch(e){} }
+let best = load();
+
+const app = document.getElementById("app");
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+
+let S = null;
+
+function home(){
+  S = null;
+  const counts = TEMAS.map((_,i)=>Q.filter(q=>q.t===i+1).length);
+  app.innerHTML = `
+  <header>
+    <div class="eyebrow">História · 2ª série do EM · Provão Paulista</div>
+    <h1 style="margin-top:8px">Desafio de <mark>História</mark></h1>
+    <p class="lede">${Q.length} perguntas sobre os 12 temas do Provão. Escolha um tema para revisar ou encare uma rodada misturada. Cada resposta vem com a explicação, então errar também ensina.</p>
+  </header>
+  <section class="modes" aria-label="Modos de jogo">
+    <button class="mode" id="m-relampago"><b>Rodada relâmpago</b><span>10 perguntas sorteadas de todos os temas</span></button>
+    <button class="mode alt" id="m-maratona"><b>Maratona</b><span>Todas as ${Q.length} perguntas. Para quem quer gabaritar</span></button>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Escolha um tema</h2>
+    <div class="temas">
+      ${TEMAS.map((nm,i)=>{ const b=best["t"+(i+1)]; return `
+      <button class="tema" data-t="${i+1}">
+        <span class="n">${pad(i+1)}</span>
+        <span class="nm">${esc(nm)}</span>
+        <span class="meta">${counts[i]} perguntas${b!=null?` · <span class="best">recorde ${b}/${counts[i]}</span>`:""}</span>
+      </button>`; }).join("")}
+    </div>
+  </section>
+  <footer>Dica: no computador, use as teclas 1 a 4 para responder e Enter para avançar. Seus recordes ficam salvos só neste aparelho.</footer>`;
+  document.getElementById("m-relampago").onclick = ()=> start(shuffle(Q).slice(0,10), "Rodada relâmpago", "rel");
+  document.getElementById("m-maratona").onclick = ()=> start(shuffle(Q), "Maratona", "mar");
+  app.querySelectorAll(".tema").forEach(b=> b.onclick = ()=>{ const t=+b.dataset.t; start(shuffle(Q.filter(q=>q.t===t)), `Tema ${pad(t)} · ${TEMAS[t-1]}`, "t"+t); });
+  window.scrollTo({top:0});
+}
+
+function start(list, label, key){
+  S = {list, label, key, i:0, score:0, streak:0, maxStreak:0, fifty:true, missed:[], answered:false, opts:null};
+  question();
+}
+
+function question(){
+  const item = S.list[S.i];
+  S.answered = false;
+  S.opts = shuffle(item.o.map((txt,idx)=>({txt, ok: idx===0})));
+  const pct = (S.i / S.list.length) * 100;
+  app.innerHTML = `
+  <div class="bar">
+    <button class="back" id="back">← Temas</button>
+    <div class="chips">
+      <span class="chip">${S.i+1} de ${S.list.length}</span>
+      <span class="chip">Acertos: ${S.score}</span>
+      <span class="chip ${S.streak>=3?"hot":""}" id="streak">Sequência: ${S.streak}</span>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+  <article class="card">
+    <div class="qhead">
+      <span class="eyebrow">Tema ${pad(item.t)} · ${esc(TEMAS[item.t-1])}</span>
+      ${item.y?`<span class="stamp">${esc(item.y)}</span>`:""}
+    </div>
+    <p class="q">${esc(item.q)}</p>
+    <div class="opts" role="group" aria-label="Alternativas">
+      ${S.opts.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${"ABCD"[k]}</span><span>${esc(o.txt)}</span></button>`).join("")}
+    </div>
+    <div class="tools">
+      <button class="ghost" id="fifty" ${S.fifty?"":"disabled"}>Eliminar 2 alternativas (1 por rodada)</button>
+    </div>
+    <div id="fb"></div>
+  </article>`;
+  document.getElementById("back").onclick = home;
+  app.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> answer(+b.dataset.k));
+  document.getElementById("fifty").onclick = fifty;
+  window.scrollTo({top:0});
+}
+
+function fifty(){
+  if(!S.fifty || S.answered) return;
+  S.fifty = false;
+  const wrong = shuffle(S.opts.map((o,k)=>o.ok?-1:k).filter(k=>k>=0)).slice(0,2);
+  wrong.forEach(k=>{ const b=app.querySelector(`.opt[data-k="${k}"]`); b.classList.add("gone"); b.disabled=true; });
+  document.getElementById("fifty").disabled = true;
+}
+
+function answer(k){
+  if(S.answered) return;
+  const btn = app.querySelector(`.opt[data-k="${k}"]`);
+  if(!btn || btn.disabled) return;
+  S.answered = true;
+  const item = S.list[S.i];
+  const ok = S.opts[k].ok;
+  app.querySelectorAll(".opt").forEach((b,j)=>{ b.disabled = true; if(S.opts[j].ok) b.classList.add("right"); });
+  if(!ok) btn.classList.add("wrong");
+  document.getElementById("fifty").disabled = true;
+  if(ok){ S.score++; S.streak++; S.maxStreak=Math.max(S.maxStreak,S.streak); }
+  else { S.streak=0; S.missed.push(item); }
+  let head = ok ? pick(HIT) : pick(MISS);
+  if(ok && S.streak>=3 && S.streak%3===0) head = `${S.streak} seguidas! Tá pegando fogo.`;
+  const last = S.i === S.list.length-1;
+  document.getElementById("fb").innerHTML = `
+    <div class="fb ${ok?"ok":"no"}" role="status">
+      <b>${esc(head)}</b>
+      ${ok?"":`<p><strong>Resposta:</strong> ${esc(item.o[0])}</p>`}
+      <p>${esc(item.e)}</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="next" id="next">${last?"Ver resultado":"Próxima →"}</button></div>`;
+  const st = document.getElementById("streak");
+  st.textContent = `Sequência: ${S.streak}`; st.classList.toggle("hot", S.streak>=3);
+  app.querySelector(".chips .chip:nth-child(2)").textContent = `Acertos: ${S.score}`;
+  const nx = document.getElementById("next");
+  nx.onclick = next; nx.focus({preventScroll:true});
+  document.getElementById("fb").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function next(){
+  if(S.i < S.list.length-1){ S.i++; question(); } else end();
+}
+
+function end(){
+  const n = S.list.length, r = S.score/n;
+  let rank = RANKS[0]; RANKS.forEach(x=>{ if(r>=x[0]) rank=x; });
+  let record = false;
+  if(S.key.startsWith("t")){ const prev = best[S.key]; if(prev==null || S.score>prev){ best[S.key]=S.score; record = prev!=null || true; save(best); } }
+  else { const prev = best[S.key]; if(prev==null || r>prev){ best[S.key]=r; save(best); record = prev!=null; } }
+  app.innerHTML = `
+  <div class="bar"><button class="back" id="back">← Temas</button></div>
+  <article class="card result">
+    <span class="eyebrow">${esc(S.label)}</span>
+    <div class="big">${S.score}<small> / ${n}</small></div>
+    <span class="rank">${esc(rank[1])}</span>
+    <p style="margin:0">${esc(rank[2])}</p>
+    <p class="hint" style="margin:0">Maior sequência de acertos: ${S.maxStreak}${record && S.key.startsWith("t") ? " · recorde do tema salvo" : ""}</p>
+    <div class="row">
+      <button class="next" id="again">Jogar de novo</button>
+      ${S.missed.length?`<button class="btn2" id="redo">Refazer só as que errei (${S.missed.length})</button>`:""}
+    </div>
+  </article>
+  ${S.missed.length?`
+  <section class="review">
+    <h2>Revisão: o que vale reler</h2>
+    ${S.missed.map(m=>`<div class="rv"><p class="eyebrow">Tema ${pad(m.t)}</p><p>${esc(m.q)}</p><p class="a">${esc(m.o[0])}</p></div>`).join("")}
+  </section>`:`<p class="lede">Nenhum erro nesta rodada. Que tal tentar a Maratona?</p>`}`;
+  document.getElementById("back").onclick = home;
+  const list = S.list, label = S.label, key = S.key, missed = S.missed;
+  document.getElementById("again").onclick = ()=> start(shuffle(list), label, key);
+  const rd = document.getElementById("redo");
+  if(rd) rd.onclick = ()=> start(shuffle(missed), "Revanche das que errei", "rev");
+  window.scrollTo({top:0});
+}
+
+document.addEventListener("keydown", e=>{
+  if(!S || e.target.tagName==="INPUT") return;
+  const n = "1234".indexOf(e.key);
+  if(n>=0 && !S.answered){ answer(n); }
+  else if(e.key==="Enter" && S.answered && document.getElementById("next") && document.activeElement?.id!=="next"){ next(); }
+});
+
+home();
+</script>
+
+</html>
