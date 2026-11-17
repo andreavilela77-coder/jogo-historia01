@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Desafio de História 3ª Série</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one narrow column like a study card; home = tema index, play = one question card, end = result + revisão */
+:root{
+  --paper:#EEF1F6; --surface:#FFFFFF; --ink:#152036; --muted:#566178; --line:#D3D9E4;
+  --accent:#2A50D4; --accent-ink:#FFFFFF; --sun:#F4B400; --sun-ink:#152036;
+  --ok:#17824A; --ok-bg:#E3F4EA; --bad:#B9332A; --bad-bg:#FBE7E5;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#0E1421; --surface:#172034; --ink:#E9EDF5; --muted:#9BA6BB; --line:#2B3754;
+  --accent:#86A2FF; --accent-ink:#0E1421; --sun:#F6C744; --sun-ink:#0E1421;
+  --ok:#5BCB8A; --ok-bg:#16301F; --bad:#FF8A7E; --bad-bg:#3A1C1A; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
+h1 mark{background:var(--sun);color:var(--sun-ink);padding:0 .15em;border-radius:6px}
+h2{font-size:1.35rem;font-weight:800}
+.lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--r);padding:16px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.mode.alt{background:var(--ink);color:var(--paper)}
+.mode b{font-family:var(--display);font-size:1.2rem}
+.mode span{font-size:.9rem;opacity:.85}
+.mode:hover{filter:brightness(1.08)}
+
+.temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.tema{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:start}
+.tema:hover{border-color:var(--accent)}
+.tema .n{font-family:var(--display);font-weight:800;font-size:1.5rem;color:var(--accent);grid-row:span 2;font-variant-numeric:tabular-nums;line-height:1}
+.tema .nm{font-weight:700;line-height:1.25;min-width:0}
+.tema .meta{font-size:.82rem;color:var(--muted)}
+.tema .meta .best{color:var(--ok);font-weight:700}
+
+/* play */
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .back{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.9rem}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.hot{background:var(--sun);color:var(--sun-ink);border-color:var(--sun);font-weight:700}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.stamp{font-family:var(--display);font-weight:800;font-size:.85rem;color:var(--bad);border:2px solid var(--bad);border-radius:6px;padding:1px 8px;transform:rotate(-3deg);letter-spacing:.04em}
+.q{font-size:1.2rem;font-weight:700;margin:0;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s, transform .1s}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt span:last-child{min-width:0}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.right .k{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.wrong .k{background:var(--bad);color:var(--surface);border-color:var(--bad)}
+.opt.gone{opacity:.3;text-decoration:line-through}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ghost{background:none;border:1px dashed var(--muted);border-radius:999px;padding:6px 14px;font-size:.9rem;color:var(--muted)}
+.ghost:disabled{opacity:.4;cursor:default}
+.fb{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--ok-bg)} .fb.no{background:var(--bad-bg)}
+.fb b{font-family:var(--display);font-size:1.1rem}
+.fb.ok b{color:var(--ok)} .fb.no b{color:var(--bad)}
+.fb p{margin:0}
+.next{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:10px 22px;font-weight:700}
+.hint{font-size:.82rem;color:var(--muted)}
+
+/* end */
+.result{text-align:left;display:flex;flex-direction:column;gap:10px}
+.big{font-family:var(--display);font-weight:800;font-size:clamp(3rem,12vw,5rem);line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.4em;color:var(--muted)}
+.rank{display:inline-block;background:var(--sun);color:var(--sun-ink);font-family:var(--display);font-weight:800;font-size:1.3rem;padding:4px 12px;border-radius:8px;align-self:flex-start}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{border-left:4px solid var(--bad);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 14px}
+.rv p{margin:0}
+.rv .a{color:var(--ok);font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn2{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:10px 18px;font-weight:700}
+footer{color:var(--muted);font-size:.85rem}
+
+@media (max-width:460px){ .modes{grid-template-columns:1fr} .card{padding:16px} .q{font-size:1.08rem} body{font-size:16px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+.fb{animation:pop .25s ease-out}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const TEMAS = [
+ "Resistências à ditadura",
+ "“Tortura nunca mais” e a Comissão Nacional da Verdade",
+ "Redemocratização e Constituição de 1988",
+ "Nova República, Plano Real e neoliberalismo",
+ "Segunda Revolução Industrial, imperialismo e Belle Époque",
+ "Primeira Guerra, Revoluções Russas e crise de 1929",
+ "Nazifascismo, Segunda Guerra e Holocausto",
+ "Pós-guerra e direitos humanos",
+ "Guerra Fria e descolonização",
+ "Do populismo ao golpe de 1964 e às ditaduras do Cone Sul",
+ "Panorama: Antiguidade e Idade Média",
+ "Panorama: mundo moderno e América portuguesa",
+ "Panorama: revoluções e século XIX",
+ "Panorama: do Brasil Imperial ao Estado Novo"
+];
+// o[0] é sempre a correta; as alternativas são embaralhadas na hora de mostrar
+const Q = [{"t":1,"y":"1968","q":"A morte de um estudante secundarista pela polícia no restaurante Calabouço, no Rio, desencadeou grandes protestos em 1968. Quem era ele?","o":["Edson Luís","Vladimir Herzog","Rubens Paiva","Stuart Angel Jones"],"e":"A comoção levou à Passeata dos Cem Mil, em junho de 1968. Meses depois, em dezembro, o governo respondeu com o AI-5."},
+{"t":1,"q":"Músicas como “Cálice”, de Chico Buarque e Gilberto Gil, eram censuradas. Como os artistas tentavam driblar a censura?","o":["Usavam metáforas e duplo sentido nas letras","Pediam autorização direta aos generais do regime","Publicavam as músicas só em jornais de Paris","Cantavam apenas em inglês nos festivais da TV"],"e":"“Cálice” soa como “cale-se”. Os censores aprenderam o truque, e muita música ficou anos proibida. Vários artistas foram presos ou exilados."},
+{"t":1,"y":"1972–74","q":"A Guerrilha do Araguaia, no sul do Pará, foi organizada por qual partido clandestino?","o":["PCdoB","ARENA","MDB","UDN"],"e":"A ARENA era o partido do governo e o MDB, a oposição consentida. A guerrilha foi exterminada pelo Exército, e muitos corpos nunca foram encontrados."},
+{"t":1,"y":"1978–80","q":"As greves que desafiaram a ditadura no fim dos anos 1970 e revelaram novas lideranças sindicais foram feitas por...","o":["Metalúrgicos do ABC paulista","Bancários do centro do Rio de Janeiro","Cortadores de cana do sertão nordestino","Professores da rede estadual de São Paulo"],"e":"Em São Bernardo, Santo André e Diadema, milhares de operários pararam as fábricas. Era o “novo sindicalismo”, que daria origem à CUT e ao PT."},
+{"t":1,"y":"1979","q":"Por que a Lei da Anistia de 1979 é criticada até hoje?","o":["Também perdoou os agentes que torturaram","Libertou apenas os presos por crimes comuns","Proibiu a volta dos exilados políticos ao país","Foi aprovada por um plebiscito sem campanha"],"e":"O movimento pedia anistia “ampla, geral e irrestrita” para os perseguidos. A lei permitiu a volta dos exilados, mas foi interpretada como perdão também aos torturadores."},
+{"t":2,"y":"1985","q":"O livro Brasil: Nunca Mais, organizado em segredo por Dom Paulo Evaristo Arns e pelo pastor Jaime Wright, provou a tortura usando...","o":["Processos do próprio Superior Tribunal Militar","Diários pessoais escritos pelos próprios generais","Gravações secretas obtidas da CIA","Entrevistas com os presidentes militares"],"e":"Advogados copiaram cerca de 700 processos do STM. A ditadura foi denunciada com documentos dela mesma."},
+{"t":2,"y":"1975","q":"Um jornalista morreu no DOI-CODI de São Paulo e o regime divulgou uma falsa versão de suicídio. O culto ecumênico em sua memória reuniu milhares de pessoas. Quem era ele?","o":["Vladimir Herzog","Edson Luís","Chico Mendes","Carlos Lamarca, ex-capitão"],"e":"A foto montada do “suicídio” foi desmentida. Em 2013 a família recebeu um novo atestado de óbito, reconhecendo a morte por tortura."},
+{"t":2,"y":"2012–14","q":"O que fez a Comissão Nacional da Verdade?","o":["Investigou violações e apontou responsáveis","Julgou e prendeu os torturadores do regime","Revogou de forma definitiva a Lei da Anistia","Indenizou todas as famílias de imediato"],"e":"A CNV reconheceu 434 mortos e desaparecidos políticos e listou 377 agentes do Estado responsáveis. Ela não tinha poder de punir."},
+{"t":2,"q":"Comparando Brasil e Argentina depois das ditaduras, qual é a grande diferença?","o":["A Argentina julgou militares; o Brasil, não","O Brasil julgou militares; a Argentina, não","Nenhum dos dois países teve ditadura militar","Os dois condenaram todos os seus torturadores"],"e":"Na Argentina, generais das juntas foram condenados. No Brasil, a interpretação da Lei da Anistia impediu os julgamentos."},
+{"t":3,"y":"1984","q":"Milhões de pessoas foram às ruas nas Diretas Já. O que aconteceu com a emenda Dante de Oliveira?","o":["Foi derrotada no Congresso","Garantiu eleição direta em 1985","Foi aprovada pelos militares","Não teve nenhum apoio popular"],"e":"Faltaram 22 votos. O presidente seguinte, Tancredo Neves, foi escolhido de forma indireta pelo Colégio Eleitoral."},
+{"t":3,"y":"1985","q":"Tancredo Neves foi eleito pelo Colégio Eleitoral, mas adoeceu antes da posse e morreu. O que aconteceu?","o":["José Sarney assumiu a presidência","Tancredo governou até o ano de 1990","Ulysses Guimarães virou o presidente","Os militares voltaram ao governo"],"e":"Sarney, vice e antigo aliado do regime, abriu a Nova República. A primeira eleição direta para presidente só veio em 1989."},
+{"t":3,"y":"1988","q":"Com a Constituição de 1988, quem passou a poder votar, de forma facultativa?","o":["Jovens de 16 e 17 anos e analfabetos","Apenas os homens alfabetizados do país","Somente os cidadãos com mais de 21 anos","Estrangeiros com residência permanente"],"e":"Ela também tornou o racismo crime inafiançável e imprescritível e criou o SUS. Por isso foi chamada de Constituição Cidadã."},
+{"t":3,"y":"1988","q":"O que a Constituição de 1988 garantiu aos povos indígenas?","o":["Direitos originários sobre suas terras","A integração forçada à sociedade nacional","O controle das terras pelo Exército","A proibição de votar nas eleições"],"e":"O artigo 231 reconhece o direito às terras tradicionalmente ocupadas e às suas culturas. Antes, a política oficial era “integrar” os indígenas até eles deixarem de sê-lo."},
+{"t":4,"y":"1986","q":"O Plano Cruzado, do governo Sarney, ficou marcado por...","o":["Congelar preços, com “fiscais do Sarney”","Confiscar as poupanças acima de um limite","Criar a URV e depois a moeda real","Acabar com o salário mínimo nacional"],"e":"Gente comum fiscalizava preços nos supermercados. Funcionou alguns meses, mas faltaram produtos e a inflação voltou com força."},
+{"t":4,"y":"1990","q":"No dia seguinte à posse, o governo Collor tomou uma medida que chocou o país. Qual?","o":["Bloqueou as poupanças acima de um limite","Congelou os preços com ajuda dos fiscais","Lançou a URV como moeda de transição","Estatizou bancos e grandes empresas"],"e":"O dinheiro ficou retido por 18 meses. A inflação não foi controlada e o confisco virou trauma nacional."},
+{"t":4,"y":"1992","q":"Os “caras-pintadas”, estudantes com o rosto pintado de verde e amarelo, foram às ruas pedindo...","o":["O impeachment de Collor","A volta do regime militar","O fim do Plano Real","Eleições só indiretas"],"e":"Denúncias de corrupção levaram ao processo. Collor renunciou antes da votação final no Senado e Itamar Franco assumiu."},
+{"t":4,"y":"1994","q":"Antes de o real virar moeda, o Plano Real usou uma unidade de conta “virtual” para alinhar preços e salários. Qual?","o":["URV","Cruzado","Cruzeiro","Mil-réis"],"e":"A URV, Unidade Real de Valor, circulou só nos preços entre março e junho de 1994. Em julho virou o real, e a hiperinflação acabou."},
+{"t":4,"q":"Nos anos 1990, o neoliberalismo no Brasil teve como marcas...","o":["Privatizações e abertura comercial","Estatização de bancos e indústrias","Congelamento de todos os preços","Proibição de produtos importados"],"e":"Vale do Rio Doce (1997) e Telebrás (1998) foram vendidas. A ideia era reduzir o Estado e abrir a economia ao mercado externo."},
+{"t":5,"y":"1884–85","q":"A Conferência de Berlim reuniu potências europeias para...","o":["Repartir a África entre elas","Libertar as colônias africanas","Unificar a Alemanha sob a Prússia","Encerrar a Primeira Guerra Mundial"],"e":"Nenhum africano foi convidado. As fronteiras foram traçadas com régua sobre mapas, separando povos e juntando rivais."},
+{"t":5,"q":"Como os europeus justificavam o imperialismo do século XIX?","o":["Missão “civilizadora” e racismo científico","Respeito às culturas e aos povos locais","Defesa dos direitos humanos universais da ONU","Combate ao tráfico de drogas na Ásia"],"e":"Kipling falava no “fardo do homem branco”, e o darwinismo social dizia que havia raças superiores. Por trás estavam matérias-primas, mercados e investimentos."},
+{"t":5,"y":"1902–06","q":"No Brasil, a Belle Époque teve como símbolo...","o":["A reforma de Pereira Passos no Rio","A construção de Brasília no Planalto","A criação da Petrobras na ditadura","A Revolta dos Malês em Salvador"],"e":"Avenidas largas inspiradas em Paris e o “bota-abaixo” dos cortiços. Os pobres foram empurrados para os morros e subúrbios."},
+{"t":5,"y":"1839–42","q":"Depois de vencer a China na Guerra do Ópio, a Inglaterra...","o":["Ficou com Hong Kong","Perdeu a Índia para os chineses","Foi expulsa da Ásia para sempre","Proibiu o comércio de ópio"],"e":"A China foi obrigada a aceitar o ópio inglês e a abrir portos. Hong Kong só voltou à China em 1997."},
+{"t":5,"q":"O Congo, onde milhões morreram na extração de borracha, era propriedade pessoal de qual governante europeu?","o":["Leopoldo II, rei da Bélgica","Napoleão III, imperador da França","Bismarck, chanceler da Alemanha","Vitória, rainha da Inglaterra"],"e":"Trabalhadores que não cumpriam metas tinham mãos amputadas. A denúncia internacional fez a Bélgica assumir a colônia em 1908."},
+{"t":6,"y":"1914","q":"Qual foi o estopim da Primeira Guerra Mundial?","o":["A morte do arquiduque em Sarajevo","A invasão alemã da Polônia","O ataque japonês à base de Pearl Harbor","A quebra da Bolsa de Nova York"],"e":"Francisco Ferdinando, herdeiro austríaco, foi morto por um nacionalista sérvio. As alianças militares arrastaram a Europa inteira para a guerra."},
+{"t":6,"q":"Na frente ocidental, soldados passaram anos em valas lamacentas, com ratos, gás e metralhadoras. Como se chamou essa forma de combate?","o":["Guerra de trincheiras","Guerra-relâmpago (Blitzkrieg)","Guerra de guerrilhas","Guerra nuclear"],"e":"As linhas quase não se moviam, e milhares morriam por alguns metros de terra. A Blitzkrieg é da Segunda Guerra."},
+{"t":6,"y":"1919","q":"Por que o Tratado de Versalhes alimentou o ressentimento alemão?","o":["Culpou a Alemanha e impôs reparações","Dividiu a Rússia entre França e Inglaterra","Criou a ONU e o seu Conselho de Segurança","Devolveu a Alsácia-Lorena à Alemanha"],"e":"A Alemanha perdeu territórios, teve o exército limitado e precisou pagar indenizações enormes. Hitler explorou essa humilhação."},
+{"t":6,"y":"1917","q":"Qual foi o lema dos bolcheviques de Lênin na Revolução de Outubro?","o":["“Paz, terra e pão”","“Ordem e progresso”","“Ferro e sangue”","“Liberdade, igualdade e fraternidade”"],"e":"A Rússia sofria com a guerra, a fome e a concentração de terras. Os bolcheviques prometeram sair da guerra e entregar terra aos camponeses."},
+{"t":6,"y":"1929","q":"Quais foram as causas da crise de 1929?","o":["Superprodução e especulação na Bolsa","Falta de produtos nas lojas americanas","Guerra entre os Estados Unidos e o México","Proibição de exportar para a Europa"],"e":"As fábricas produziam mais do que se conseguia vender, e as ações subiam sem lastro. No Brasil, o café despencou e o governo chegou a queimar sacas."},
+{"t":6,"y":"1933","q":"Para sair da crise, Roosevelt lançou o New Deal, baseado em...","o":["Obras públicas e intervenção do Estado","Estado mínimo e corte de gastos sociais","Volta ao padrão-ouro e ao livre mercado","Fechamento das fábricas por decreto"],"e":"Inspirado nas ideias de Keynes, o Estado gerou empregos, criou previdência e regulou bancos."},
+{"t":7,"q":"O que o fascismo italiano e o nazismo alemão tinham em comum?","o":["Partido único, culto ao líder e anticomunismo","Pluralismo partidário e imprensa totalmente livre","Defesa do internacionalismo e da luta de classes","Separação de poderes e proteção das minorias"],"e":"Também usavam propaganda maciça, nacionalismo extremo e violência contra opositores. O nazismo somava a isso um racismo radical."},
+{"t":7,"y":"1935","q":"As Leis de Nuremberg, aprovadas pelos nazistas...","o":["Tiraram a cidadania dos judeus alemães","Julgaram os criminosos de guerra nazistas","Criaram a Liga das Nações em Genebra","Dividiram a Alemanha em quatro zonas"],"e":"Cuidado com a pegadinha: o Tribunal de Nuremberg (1945–46) é outra coisa. As leis de 1935 foram um passo rumo ao Holocausto."},
+{"t":7,"q":"Quem foram as vítimas do Holocausto?","o":["Cerca de 6 milhões de judeus e outros grupos","Apenas soldados aliados capturados nas batalhas","Somente opositores políticos comunistas","Cerca de 6 mil pessoas, todas militares"],"e":"Além dos judeus, foram perseguidos e mortos ciganos (roma e sinti), homossexuais, pessoas com deficiência, testemunhas de Jeová e opositores."},
+{"t":7,"y":"1/9/1939","q":"Qual acontecimento deu início à Segunda Guerra Mundial na Europa?","o":["A invasão alemã da Polônia","O atentado de Sarajevo de 1914","A queda do Muro de Berlim","O ataque a Pearl Harbor"],"e":"França e Inglaterra declararam guerra dois dias depois. Pearl Harbor (1941) trouxe os EUA para o conflito."},
+{"t":7,"y":"1944–45","q":"Qual foi a participação do Brasil na Segunda Guerra?","o":["Enviou a FEB para lutar na Itália","Lutou ao lado da Alemanha nazista","Ficou neutro até o fim do conflito","Enviou tropas para invadir o Japão"],"e":"Cerca de 25 mil soldados lutaram, com vitórias como Monte Castelo. A contradição: uma ditadura lutando contra o fascismo enfraqueceu o Estado Novo."},
+{"t":8,"y":"1945","q":"No Conselho de Segurança da ONU, o que dá tanto poder a EUA, Rússia, China, Reino Unido e França?","o":["O direito de veto","O controle da Assembleia Geral","O comando dos exércitos de todos","A posse exclusiva de armas nucleares"],"e":"Um único veto de um membro permanente derruba uma decisão. Por isso o Conselho muitas vezes fica travado."},
+{"t":8,"y":"10/12/1948","q":"O que a ONU aprovou em 10 de dezembro de 1948?","o":["A Declaração Universal dos Direitos Humanos","A criação do Pacto de Varsóvia e da OTAN","O fim do Tratado de Versalhes e das reparações","A divisão de Berlim entre quatro potências"],"e":"Depois do Holocausto, o mundo afirmou que todos nascem livres e iguais em dignidade e direitos, sem distinção de raça, sexo, religião ou origem."},
+{"t":8,"y":"1945–46","q":"O Tribunal de Nuremberg...","o":["Julgou líderes nazistas pelos seus crimes","Tirou a cidadania dos judeus em 1935","Criou o Estado de Israel na Palestina britânica","Dividiu a Coreia em Norte e Sul"],"e":"Criou a ideia de “crimes contra a humanidade” e recusou a desculpa de “só cumprir ordens”."},
+{"t":8,"y":"1948","q":"O Plano Marshall era...","o":["Ajuda dos EUA para reconstruir a Europa","Um plano soviético para ocupar a Europa","Um acordo para dividir a Alemanha em duas","Um projeto da ONU para descolonizar a África"],"e":"Bilhões de dólares para reconstruir a Europa Ocidental e, ao mesmo tempo, impedir o avanço do comunismo."},
+{"t":9,"q":"Por que a Guerra Fria tem esse nome?","o":["EUA e URSS nunca se enfrentaram diretamente","Os combates ocorreram só em regiões geladas","Nenhum país entrou em guerra no período","Foi uma guerra curta, de poucos meses"],"e":"Houve guerras indiretas, como Coreia e Vietnã, corrida armamentista e corrida espacial. O medo de uma guerra nuclear impedia o choque direto."},
+{"t":9,"q":"O Muro de Berlim, símbolo da Guerra Fria, foi...","o":["Erguido em 1961 e derrubado em 1989","Erguido em 1945 e derrubado em 1961","Erguido em 1939 e derrubado em 1945","Erguido em 1989 e derrubado em 1991"],"e":"Ele separava Berlim Oriental, socialista, de Berlim Ocidental. Sua queda abriu caminho para a reunificação alemã e o fim da URSS em 1991."},
+{"t":9,"y":"1962","q":"O momento em que o mundo esteve mais perto de uma guerra nuclear envolveu...","o":["Mísseis soviéticos instalados em Cuba","Uma bomba atômica lançada sobre Berlim","A invasão americana da União Soviética","Tropas chinesas desembarcando no Alasca"],"e":"Na Crise dos Mísseis, a URSS retirou os mísseis de Cuba e os EUA retiraram os seus da Turquia."},
+{"t":9,"y":"1947","q":"A independência da Índia teve como grande líder...","o":["Gandhi, com resistência não violenta","Mandela, com a guerra no deserto","Ho Chi Minh, com tropas soviéticas e chinesas","Nasser, com o canal de Suez"],"e":"Boicotes, a Marcha do Sal e a desobediência civil enfraqueceram o domínio britânico. Mas a divisão entre Índia e Paquistão foi violenta."},
+{"t":9,"y":"1975","q":"Angola e Moçambique conquistaram a independência...","o":["Após a Revolução dos Cravos em Portugal","Logo depois da Segunda Guerra, em 1945","Junto com a independência do Brasil, em 1822","Só depois do fim da União Soviética"],"e":"As guerras coloniais desgastaram a ditadura portuguesa, derrubada em 25 de abril de 1974. Em 1975 vieram as independências."},
+{"t":9,"y":"1955","q":"A Conferência de Bandung reuniu...","o":["Países afro-asiáticos que queriam não se alinhar","Potências europeias para repartir a África","EUA e URSS para encerrar a Guerra Fria","Países da OTAN reunidos para planejar a invasão de Cuba"],"e":"Daí nasceu a ideia de “Terceiro Mundo” e o Movimento dos Não Alinhados: nem EUA, nem URSS."},
+{"t":10,"q":"O que caracterizava o populismo na política brasileira entre 1945 e 1964?","o":["Líder carismático falando direto às massas","Governo militar sem nenhum apoio popular","Monarquia constitucional com Poder Moderador","Regime de partido único comunista"],"e":"Vargas, JK e Jango buscavam apoio dos trabalhadores urbanos, com nacionalismo e direitos sociais. O termo também é usado de forma crítica."},
+{"t":10,"y":"1961","q":"Para Jango assumir a presidência depois da renúncia de Jânio Quadros, que solução foi adotada?","o":["O parlamentarismo","A volta da monarquia","A posse de Juscelino","Um golpe militar imediato"],"e":"Ministros militares tentaram impedir a posse, e Brizola liderou a Campanha da Legalidade. O parlamentarismo foi derrubado num plebiscito em 1963."},
+{"t":10,"y":"1964","q":"Qual potência apoiou o golpe de 1964 e preparou até uma força naval (Operação Brother Sam) caso houvesse resistência?","o":["Os Estados Unidos","A União Soviética","A China de Mao","A Inglaterra"],"e":"No contexto da Guerra Fria, os EUA temiam que o Brasil “virasse uma nova Cuba”. Documentos liberados depois confirmaram o apoio."},
+{"t":10,"q":"A Operação Condor foi...","o":["Uma cooperação das ditaduras para caçar opositores","Um programa de vacinação em massa na América do Sul","Um acordo comercial entre os países do Mercosul","Um plano americano para reconstruir a Europa"],"e":"Brasil, Argentina, Chile, Uruguai, Paraguai e Bolívia trocavam informações, sequestravam e matavam exilados além das fronteiras."},
+{"t":10,"y":"11/9/1973","q":"No Chile, o golpe do general Pinochet derrubou qual presidente socialista eleito?","o":["Salvador Allende","Juan Domingo Perón","Fidel Castro","João Goulart"],"e":"Allende morreu no palácio presidencial durante o ataque. A ditadura de Pinochet durou até 1990."},
+{"t":10,"y":"1977","q":"Na Argentina, mulheres com lenços brancos passaram a marchar toda semana pedindo notícias dos filhos desaparecidos. Quem eram?","o":["Mães da Praça de Maio","Estudantes caras-pintadas","Diretas Já","Mulheres da FEB"],"e":"Organizações de direitos humanos estimam 30 mil desaparecidos na ditadura argentina. As Mães e as Avós da Praça de Maio seguem ativas."},
+{"t":11,"q":"Comparando a democracia de Atenas com a atual, qual é a grande diferença?","o":["Atenas excluía mulheres e escravizados","Em Atenas o voto feminino era obrigatório","Hoje a democracia é direta, sem representantes","Em Atenas o rei escolhia quem podia votar"],"e":"Atenas tinha democracia direta, mas só para homens adultos, livres e filhos de atenienses. Estrangeiros também ficavam de fora."},
+{"t":11,"y":"c. 450 a.C.","q":"A Lei das Doze Tábuas foi uma conquista dos plebeus romanos porque...","o":["Pôs as leis por escrito","Criou o cargo de imperador","Libertou os escravizados","Dividiu o império em dois"],"e":"Antes, só os patrícios conheciam as leis e as interpretavam como queriam. Escrevê-las limitava abusos."},
+{"t":11,"q":"No feudalismo, o servo...","o":["Estava preso à terra e devia obrigações","Era vendido em mercados como escravo","Mudava de feudo sempre que bem entendesse","Era o dono das terras que cultivava"],"e":"Corveia, talha e banalidades eram algumas obrigações. O servo não podia ser vendido, mas também não podia deixar a terra."},
+{"t":11,"q":"Na Idade Média, qual foi um papel dos sábios muçulmanos em cidades como Bagdá e Córdoba?","o":["Traduziram e preservaram obras gregas","Destruíram as bibliotecas da Antiguidade","Proibiram o estudo da matemática","Expulsaram todos os cristãos da Europa"],"e":"Aristóteles chegou à Europa cristã em boa parte por traduções do árabe. Os algarismos que usamos também vieram por esse caminho."},
+{"t":11,"y":"séc. XIV","q":"Uma consequência da Peste Negra na Europa foi...","o":["Falta de mão de obra e revoltas camponesas","Um aumento muito rápido da população europeia","O fortalecimento definitivo da servidão","O fim imediato do comércio com o Oriente"],"e":"Com cerca de um terço da população morta, os camponeses passaram a exigir mais. A crise ajudou a desmontar o feudalismo."},
+{"t":12,"y":"1517","q":"As 95 teses de Martinho Lutero atacavam...","o":["A venda de indulgências","A tradução da Bíblia ao latim","O poder dos reis absolutistas","O comércio com os muçulmanos"],"e":"Para Lutero, a salvação vinha pela fé, não por pagamento. A imprensa espalhou as teses pela Europa em semanas."},
+{"t":12,"q":"O mercantilismo defendia...","o":["Acumular metais e exportar mais","Deixar o mercado agir sem o Estado","Abolir as colônias e o monopólio","Dividir os lucros com os operários"],"e":"Metalismo, balança comercial favorável e pacto colonial: a colônia só podia comerciar com a metrópole."},
+{"t":12,"q":"A plantation açucareira do Brasil colonial se baseava em...","o":["Latifúndio, monocultura, escravidão e exportação","Pequenas propriedades familiares e mercado interno","Trabalho assalariado e produção para o consumo local","Cooperativas indígenas e livre comércio com a Ásia"],"e":"Grandes engenhos produziam um só produto para vender na Europa, com trabalho de africanos escravizados."},
+{"t":12,"y":"1695","q":"Palmares, na Serra da Barriga, foi...","o":["O maior quilombo da colônia","Um engenho dos holandeses em Recife","Uma missão jesuítica do Sul","Uma vila fundada por bandeirantes"],"e":"Resistiu por quase um século. Zumbi foi morto em 20 de novembro de 1695, data do Dia da Consciência Negra."},
+{"t":12,"y":"1763","q":"Com a mineração, o centro da colônia se deslocou para o Centro-Sul. O que aconteceu com a capital?","o":["Mudou de Salvador para o Rio","Mudou do Rio para Salvador","Foi transferida para Ouro Preto","Foi transferida para São Paulo"],"e":"O Rio era o porto do ouro de Minas. A mudança mostra como a economia redesenhou o mapa do poder."},
+{"t":13,"y":"1789","q":"Qual dessas ideias está na Declaração dos Direitos do Homem e do Cidadão?","o":["Os homens nascem livres e iguais em direitos","O poder do rei vem de Deus e não tem limites","A nobreza deve manter privilégios de nascimento","Só o clero pode decidir sobre as leis civis"],"e":"Era o fim legal do Antigo Regime. Mas Olympe de Gouges logo denunciou que as mulheres tinham ficado de fora."},
+{"t":13,"y":"1791–1804","q":"O que tornou a Revolução do Haiti única?","o":["Foi feita por escravizados, que aboliram a escravidão","Foi liderada por fazendeiros que queriam manter escravos","Foi concedida de forma pacífica pelo governo francês","Transformou o Haiti em uma colônia britânica"],"e":"Liderados por Toussaint Louverture e depois Dessalines, criaram a primeira república negra. O medo de um “novo Haiti” assustou as elites escravistas, inclusive no Brasil."},
+{"t":13,"y":"1848","q":"Marx e Engels, no Manifesto Comunista, explicavam a história pela...","o":["Luta de classes entre burguesia e proletariado","Harmonia natural e eterna entre patrões e empregados","Mão invisível que equilibra o mercado","Vontade divina dos reis sobre os súditos"],"e":"Para eles, os operários deveriam se organizar e tomar o poder. No mesmo ano, revoluções explodiram pela Europa."},
+{"t":13,"y":"1848","q":"A Primavera dos Povos foi...","o":["Uma onda de revoltas liberais e nacionalistas","As independências na América espanhola","Uma revolução socialista na Rússia czarista","A reunificação dos EUA depois da Guerra Civil"],"e":"Quase todas foram derrotadas, mas abriram caminho para as unificações da Itália e da Alemanha."},
+{"t":13,"q":"Quem liderou a maioria das independências da América espanhola?","o":["Criollos, como Simón Bolívar","Indígenas, como Túpac Amaru II","Espanhóis nascidos na Europa","Ingleses vindos do Caribe"],"e":"Criollos eram descendentes de espanhóis nascidos na América, ricos mas sem acesso aos cargos altos. Túpac Amaru II liderou uma grande revolta indígena em 1780, derrotada."},
+{"t":14,"y":"1824","q":"A Constituição de 1824 deu ao imperador um quarto poder. Qual?","o":["Poder Moderador","Poder Popular","Poder Eclesiástico","Poder Regencial"],"e":"Com ele, o imperador podia dissolver a Câmara e nomear senadores, ficando acima dos outros poderes."},
+{"t":14,"y":"1850","q":"O que determinou a Lei de Terras?","o":["Terras só por compra","Lotes para cada liberto","Terras grátis a imigrantes","Terras para os indígenas"],"e":"Saiu no mesmo ano do fim do tráfico. Garantiu que libertos e imigrantes pobres não virassem proprietários com facilidade."},
+{"t":14,"q":"Na Primeira República, o voto de cabresto era possível porque havia...","o":["Voto aberto controlado pelos coronéis","Voto secreto em urnas eletrônicas","Voto feminino obrigatório desde 1891","Eleição indireta feita pelo Congresso"],"e":"O coronel sabia em quem cada um votava. O voto secreto só veio com o Código Eleitoral de 1932."},
+{"t":14,"y":"1896–97","q":"Quem liderava a comunidade de Canudos, destruída pelo Exército republicano?","o":["Antônio Conselheiro","Padre Cícero Romão Batista","Lampião","João Cândido"],"e":"Cerca de 25 mil sertanejos viviam no arraial de Belo Monte. A República os tratou como inimigos monarquistas."},
+{"t":14,"y":"1937–45","q":"O Estado Novo de Getúlio Vargas combinou...","o":["Direitos trabalhistas com censura e repressão","Democracia plena com eleições a cada dois anos","A volta da monarquia com o Poder Moderador","Liberalismo econômico sem leis trabalhistas"],"e":"CLT, salário mínimo e carteira de trabalho de um lado; DIP, polícia política e Congresso fechado do outro."},
+{"t":1,"y":"1978","q":"Em 1978, nas escadarias do Theatro Municipal de São Paulo, foi lançado um movimento que denunciava o racismo e a violência policial em plena ditadura. Qual?","o":["Movimento Negro Unificado","Movimento dos Sem Terra","União Nacional dos Estudantes","Comissão Pastoral da Terra"],"e":"O ato protestava contra a discriminação de atletas negros num clube paulistano e contra a morte de Robson Silveira da Luz, torturado numa delegacia. O MNU também ajudou a consolidar o 20 de novembro como data de luta."},
+{"t":1,"y":"1988","q":"Chico Mendes, assassinado em 1988 em Xapuri, no Acre, liderava...","o":["Seringueiros na defesa da floresta","Garimpeiros na busca por ouro","Fazendeiros na criação de gado","Madeireiros na abertura de estradas"],"e":"Os seringueiros faziam “empates”: correntes humanas para impedir a derrubada da mata. A luta deu origem às reservas extrativistas."},
+{"t":1,"q":"Segundo a Comissão Nacional da Verdade, ao menos 8.350 indígenas morreram por ação ou omissão do Estado durante a ditadura. Grandes obras, como a Transamazônica...","o":["Invadiram territórios e espalharam doenças","Foram planejadas a pedido dos próprios povos indígenas","Não passaram por nenhuma terra indígena","Garantiram a demarcação das terras"],"e":"Estradas, hidrelétricas e projetos de colonização avançaram sobre territórios indígenas. O Relatório Figueiredo, de 1967, já havia documentado massacres e abusos."},
+{"t":1,"y":"1968","q":"Em 1968, o congresso clandestino da UNE em Ibiúna, no interior de São Paulo, terminou com...","o":["A prisão de centenas de estudantes","A eleição do presidente da UNE pelo voto popular","O fim da ditadura militar","A criação da Petrobras"],"e":"Cerca de 900 estudantes foram presos. O movimento estudantil foi um dos principais focos de resistência em 1968."},
+{"t":3,"y":"1987–88","q":"Na Constituinte, as 26 deputadas eleitas ficaram conhecidas como “bancada do batom”. Uma conquista ligada à atuação delas foi...","o":["Igualdade de direitos entre homens e mulheres","O fim do voto obrigatório para as mulheres","A proibição de mulheres em cargos públicos de chefia","A volta do voto censitário para os homens"],"e":"A Constituição garantiu igualdade de direitos e deveres, licença-maternidade de 120 dias e licença-paternidade. O apelido era pejorativo, e elas o assumiram com orgulho."},
+{"t":4,"q":"O Brasil está entre os países mais desiguais do mundo. Qual indicador costuma ser usado para medir a desigualdade de renda?","o":["Índice de Gini","PIB per capita","Taxa Selic","Balança comercial"],"e":"O Gini vai de 0 (todos com a mesma renda) a 1 (um só com toda a renda). O PIB per capita é uma média e esconde a desigualdade."},
+{"t":8,"y":"1955","q":"Em 1955, Rosa Parks se recusou a ceder o assento a um passageiro branco num ônibus em Montgomery, nos EUA. O gesto desencadeou...","o":["Um boicote aos ônibus e a luta pelos direitos civis","O fim imediato da segregação em todo o país","A Guerra de Secessão entre Norte e Sul","A eleição imediata de Martin Luther King para presidente"],"e":"O boicote durou 381 dias e foi liderado por Martin Luther King. A Justiça acabou declarando ilegal a segregação nos ônibus."},
+{"t":9,"y":"1949","q":"A Revolução Chinesa de 1949 levou ao poder...","o":["Mao Tsé-tung e o Partido Comunista","Chiang Kai-shek e os nacionalistas","O imperador da dinastia Qing","Os japoneses que ocupavam a China"],"e":"Os nacionalistas de Chiang Kai-shek fugiram para Taiwan. A China comunista virou peça central da Guerra Fria na Ásia."},
+{"t":9,"y":"1959","q":"A Revolução Cubana derrubou o ditador Fulgencio Batista e levou ao poder...","o":["Fidel Castro e o movimento guerrilheiro","Salvador Allende, eleito pelo voto","João Goulart, exilado no Uruguai","Augusto Pinochet, com apoio militar dos Estados Unidos"],"e":"Depois de conflitos com os EUA, Cuba se aproximou da URSS e se declarou socialista. Os EUA impuseram um embargo que dura até hoje."},
+{"t":9,"y":"1991","q":"O que aconteceu com a União Soviética em 1991?","o":["Foi dissolvida em várias repúblicas","Venceu a Guerra Fria contra os EUA","Invadiu e anexou a Europa Ocidental","Construiu o Muro de Berlim"],"e":"Crise econômica, reformas de Gorbachev e movimentos nacionalistas levaram ao fim da URSS, que se dividiu em 15 países. Era o fim da Guerra Fria."},
+{"t":10,"y":"1970","q":"Slogans como “Brasil, ame-o ou deixe-o” e a vitória na Copa de 1970 foram usados pela ditadura para...","o":["Criar um clima ufanista e calar críticas","Convocar eleições diretas para presidente","Denunciar a tortura nos quartéis","Apoiar o retorno dos exilados"],"e":"Era o auge da repressão e do “milagre econômico”. A propaganda oficial vendia um país grande e unido, enquanto opositores eram presos e torturados."}];
+
+const HIT = ["Mandou bem!","Isso aí!","Acertou em cheio!","Historiador(a) à vista!","Na mosca!","Gabaritando, hein?","O professor ficaria orgulhoso!"];
+const MISS = ["Quase! Bora entender:","Não foi dessa vez.","Opa, pegadinha da história!","Errar faz parte. Olha só:","Anota essa no caderno:"];
+const RANKS = [[0,"Turista no tempo","Dá uma relida no resumo do tema e volta para a revanche."],[0.4,"Aprendiz de cronista","Você já tem a base. Mais uma rodada e isso sobe."],[0.6,"Guardião(ã) do arquivo","Bom domínio! Revise as que errou logo abaixo."],[0.8,"Historiador(a) de respeito","Muito bem! Falta pouco para o topo."],[0.95,"Lenda do Provão","Gabaritou (ou quase). Pode desafiar a turma!"]];
+
+const LS = "quiz-hist-3s-v1";
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)) || {}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(LS, JSON.stringify(d)); }catch(e){} }
+let best = load();
+
+const app = document.getElementById("app");
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+
+let S = null;
+
+function home(){
+  S = null;
+  const counts = TEMAS.map((_,i)=>Q.filter(q=>q.t===i+1).length);
+  app.innerHTML = `
+  <header>
+    <div class="eyebrow">História · 3ª série do EM · Provão Paulista</div>
+    <h1 style="margin-top:8px">Desafio de <mark>História</mark></h1>
+    <p class="lede">${Q.length} perguntas sobre os 14 temas do cronograma. Escolha um tema para revisar ou encare uma rodada misturada. Cada resposta vem com a explicação, então errar também ensina.</p>
+  </header>
+  <section class="modes" aria-label="Modos de jogo">
+    <button class="mode" id="m-relampago"><b>Rodada relâmpago</b><span>10 perguntas sorteadas de todos os temas</span></button>
+    <button class="mode alt" id="m-maratona"><b>Maratona</b><span>Todas as ${Q.length} perguntas. Para quem quer gabaritar</span></button>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Escolha um tema</h2>
+    <div class="temas">
+      ${TEMAS.map((nm,i)=>{ const b=best["t"+(i+1)]; return `
+      <button class="tema" data-t="${i+1}">
+        <span class="n">${pad(i+1)}</span>
+        <span class="nm">${esc(nm)}</span>
+        <span class="meta">${counts[i]} perguntas${b!=null?` · <span class="best">recorde ${b}/${counts[i]}</span>`:""}</span>
+      </button>`; }).join("")}
+    </div>
+  </section>
+  <footer>Dica: no computador, use as teclas 1 a 4 para responder e Enter para avançar. Seus recordes ficam salvos só neste aparelho.</footer>`;
+  document.getElementById("m-relampago").onclick = ()=> start(shuffle(Q).slice(0,10), "Rodada relâmpago", "rel");
+  document.getElementById("m-maratona").onclick = ()=> start(shuffle(Q), "Maratona", "mar");
+  app.querySelectorAll(".tema").forEach(b=> b.onclick = ()=>{ const t=+b.dataset.t; start(shuffle(Q.filter(q=>q.t===t)), `Tema ${pad(t)} · ${TEMAS[t-1]}`, "t"+t); });
+  window.scrollTo({top:0});
+}
+
+function start(list, label, key){
+  S = {list, label, key, i:0, score:0, streak:0, maxStreak:0, fifty:true, missed:[], answered:false, opts:null};
+  question();
+}
+
+function question(){
+  const item = S.list[S.i];
+  S.answered = false;
+  S.opts = shuffle(item.o.map((txt,idx)=>({txt, ok: idx===0})));
+  const pct = (S.i / S.list.length) * 100;
+  app.innerHTML = `
+  <div class="bar">
+    <button class="back" id="back">← Temas</button>
+    <div class="chips">
+      <span class="chip">${S.i+1} de ${S.list.length}</span>
+      <span class="chip">Acertos: ${S.score}</span>
+      <span class="chip ${S.streak>=3?"hot":""}" id="streak">Sequência: ${S.streak}</span>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+  <article class="card">
+    <div class="qhead">
+      <span class="eyebrow">Tema ${pad(item.t)} · ${esc(TEMAS[item.t-1])}</span>
+      ${item.y?`<span class="stamp">${esc(item.y)}</span>`:""}
+    </div>
+    <p class="q">${esc(item.q)}</p>
+    <div class="opts" role="group" aria-label="Alternativas">
+      ${S.opts.map((o,k)=>`<button class="opt" data-k="${k}"><span class="k">${"ABCD"[k]}</span><span>${esc(o.txt)}</span></button>`).join("")}
+    </div>
+    <div class="tools">
+      <button class="ghost" id="fifty" ${S.fifty?"":"disabled"}>Eliminar 2 alternativas (1 por rodada)</button>
+    </div>
+    <div id="fb"></div>
+  </article>`;
+  document.getElementById("back").onclick = home;
+  app.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> answer(+b.dataset.k));
+  document.getElementById("fifty").onclick = fifty;
+  window.scrollTo({top:0});
+}
+
+function fifty(){
+  if(!S.fifty || S.answered) return;
+  S.fifty = false;
+  const wrong = shuffle(S.opts.map((o,k)=>o.ok?-1:k).filter(k=>k>=0)).slice(0,2);
+  wrong.forEach(k=>{ const b=app.querySelector(`.opt[data-k="${k}"]`); b.classList.add("gone"); b.disabled=true; });
+  document.getElementById("fifty").disabled = true;
+}
+
+function answer(k){
+  if(S.answered) return;
+  const btn = app.querySelector(`.opt[data-k="${k}"]`);
+  if(!btn || btn.disabled) return;
+  S.answered = true;
+  const item = S.list[S.i];
+  const ok = S.opts[k].ok;
+  app.querySelectorAll(".opt").forEach((b,j)=>{ b.disabled = true; if(S.opts[j].ok) b.classList.add("right"); });
+  if(!ok) btn.classList.add("wrong");
+  document.getElementById("fifty").disabled = true;
+  if(ok){ S.score++; S.streak++; S.maxStreak=Math.max(S.maxStreak,S.streak); }
+  else { S.streak=0; S.missed.push(item); }
+  let head = ok ? pick(HIT) : pick(MISS);
+  if(ok && S.streak>=3 && S.streak%3===0) head = `${S.streak} seguidas! Tá pegando fogo.`;
+  const last = S.i === S.list.length-1;
+  document.getElementById("fb").innerHTML = `
+    <div class="fb ${ok?"ok":"no"}" role="status">
+      <b>${esc(head)}</b>
+      ${ok?"":`<p><strong>Resposta:</strong> ${esc(item.o[0])}</p>`}
+      <p>${esc(item.e)}</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="next" id="next">${last?"Ver resultado":"Próxima →"}</button></div>`;
+  const st = document.getElementById("streak");
+  st.textContent = `Sequência: ${S.streak}`; st.classList.toggle("hot", S.streak>=3);
+  app.querySelector(".chips .chip:nth-child(2)").textContent = `Acertos: ${S.score}`;
+  const nx = document.getElementById("next");
+  nx.onclick = next; nx.focus({preventScroll:true});
+  document.getElementById("fb").scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function next(){
+  if(S.i < S.list.length-1){ S.i++; question(); } else end();
+}
+
+function end(){
+  const n = S.list.length, r = S.score/n;
+  let rank = RANKS[0]; RANKS.forEach(x=>{ if(r>=x[0]) rank=x; });
+  let record = false;
+  if(S.key.startsWith("t")){ const prev = best[S.key]; if(prev==null || S.score>prev){ best[S.key]=S.score; record = prev!=null || true; save(best); } }
+  else { const prev = best[S.key]; if(prev==null || r>prev){ best[S.key]=r; save(best); record = prev!=null; } }
+  app.innerHTML = `
+  <div class="bar"><button class="back" id="back">← Temas</button></div>
+  <article class="card result">
+    <span class="eyebrow">${esc(S.label)}</span>
+    <div class="big">${S.score}<small> / ${n}</small></div>
+    <span class="rank">${esc(rank[1])}</span>
+    <p style="margin:0">${esc(rank[2])}</p>
+    <p class="hint" style="margin:0">Maior sequência de acertos: ${S.maxStreak}${record && S.key.startsWith("t") ? " · recorde do tema salvo" : ""}</p>
+    <div class="row">
+      <button class="next" id="again">Jogar de novo</button>
+      ${S.missed.length?`<button class="btn2" id="redo">Refazer só as que errei (${S.missed.length})</button>`:""}
+    </div>
+  </article>
+  ${S.missed.length?`
+  <section class="review">
+    <h2>Revisão: o que vale reler</h2>
+    ${S.missed.map(m=>`<div class="rv"><p class="eyebrow">Tema ${pad(m.t)}</p><p>${esc(m.q)}</p><p class="a">${esc(m.o[0])}</p></div>`).join("")}
+  </section>`:`<p class="lede">Nenhum erro nesta rodada. Que tal tentar a Maratona?</p>`}`;
+  document.getElementById("back").onclick = home;
+  const list = S.list, label = S.label, key = S.key, missed = S.missed;
+  document.getElementById("again").onclick = ()=> start(shuffle(list), label, key);
+  const rd = document.getElementById("redo");
+  if(rd) rd.onclick = ()=> start(shuffle(missed), "Revanche das que errei", "rev");
+  window.scrollTo({top:0});
+}
+
+document.addEventListener("keydown", e=>{
+  if(!S || e.target.tagName==="INPUT") return;
+  const n = "1234".indexOf(e.key);
+  if(n>=0 && !S.answered){ answer(n); }
+  else if(e.key==="Enter" && S.answered && document.getElementById("next") && document.activeElement?.id!=="next"){ next(); }
+});
+
+home();
+</script>
+
+</html>
